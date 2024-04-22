@@ -1,0 +1,1 @@
+slither contracts/SQRVesting.sol --solc-remaps '@openzeppelin=node_modules/@openzeppelin' --exclude naming-convention,external-function,low-level-calls
