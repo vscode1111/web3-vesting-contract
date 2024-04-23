@@ -1,4 +1,4 @@
-import { DepositEvent } from '~typechain-types/contracts/SQRVesting';
+import { ClaimEvent } from '~typechain-types/contracts/SQRVesting';
 import { ContextBase } from '~types';
 
 type Fixture<T> = () => Promise<T>;
@@ -13,4 +13,4 @@ export interface EventArgs<T> {
   args: T;
 }
 
-export type DepositEventArgs = DepositEvent.Event & EventArgs<[string, number]>;
+export type ClaimEvent = ClaimEvent.Event & EventArgs<[string, number]>;

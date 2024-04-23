@@ -14,12 +14,6 @@ export interface Users {
   user3Address: string;
   owner2: Signer;
   owner2Address: string;
-  coldWallet: Signer;
-  coldWalletAddress: string;
-  depositVerifier: Signer;
-  depositVerifierAddress: string;
-  withdrawVerifier: Signer;
-  withdrawVerifierAddress: string;
 }
 
 export interface ERC20TokenContext {
@@ -29,7 +23,6 @@ export interface ERC20TokenContext {
   user2ERC20Token: ERC20Token;
   user3ERC20Token: ERC20Token;
   owner2ERC20Token: ERC20Token;
-  coldWalletERC20Token: ERC20Token;
 }
 
 export interface SQRVestingContext {
@@ -41,7 +34,6 @@ export interface SQRVestingContext {
   user2SQRVesting: SQRVesting;
   user3SQRVesting: SQRVesting;
   owner2SQRVesting: SQRVesting;
-  coldWalletSQRVesting: SQRVesting;
 }
 
 export type ContextBase = Users & ERC20TokenContext & SQRVestingContext;

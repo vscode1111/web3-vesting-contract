@@ -5,13 +5,6 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 abstract contract Pool is Ownable {
-  enum PoolTypes {
-    Regular,
-    Vested
-  }
-
-  PoolTypes public poolType;
-
   struct Allocation {
     uint256 amount;
     bool bought;
@@ -69,10 +62,6 @@ abstract contract Pool is Ownable {
 
   function hasBought(address wallet) public view returns (bool) {
     return (allocations[wallet].bought);
-  }
-
-  function isVested() external view returns (bool) {
-    return poolType == PoolTypes.Vested;
   }
 
   function buy() public virtual {

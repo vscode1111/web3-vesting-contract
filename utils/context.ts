@@ -34,17 +34,13 @@ export function getAddressesFromHre(hre: HardhatRuntimeEnvironment) {
 }
 
 export async function getUsers(): Promise<Users> {
-  const [owner, user1, user2, user3, owner2, coldWallet, depositVerifier, withdrawVerifier] =
-    await ethers.getSigners();
+  const [owner, user1, user2, user3, owner2] = await ethers.getSigners();
 
   const ownerAddress = await owner.getAddress();
   const user1Address = await user1.getAddress();
   const user2Address = await user2.getAddress();
   const user3Address = await user3.getAddress();
   const owner2Address = await owner2.getAddress();
-  const coldWalletAddress = await coldWallet.getAddress();
-  const depositVerifierAddress = await depositVerifier.getAddress();
-  const withdrawVerifierAddress = await withdrawVerifier.getAddress();
 
   return {
     owner,
@@ -57,12 +53,6 @@ export async function getUsers(): Promise<Users> {
     user3Address,
     owner2,
     owner2Address,
-    coldWallet,
-    coldWalletAddress,
-    depositVerifier,
-    depositVerifierAddress,
-    withdrawVerifier,
-    withdrawVerifierAddress,
   };
 }
 
@@ -70,7 +60,7 @@ export async function getERC20TokenContext(
   users: Users,
   deployData?: string | { newOnwer: string },
 ): Promise<ERC20TokenContext> {
-  const { owner, user1, user2, user3, owner2, owner2Address, coldWallet } = users;
+  const { owner, user1, user2, user3, owner2, owner2Address } = users;
 
   const testERC20TokenFactory = (await ethers.getContractFactory(
     ERC20_TOKEN_NAME,
@@ -91,7 +81,6 @@ export async function getERC20TokenContext(
   const user2ERC20Token = ownerERC20Token.connect(user2);
   const user3ERC20Token = ownerERC20Token.connect(user3);
   const owner2ERC20Token = ownerERC20Token.connect(owner2);
-  const coldWalletERC20Token = ownerERC20Token.connect(coldWallet);
 
   return {
     erc20TokenAddress,
@@ -100,7 +89,6 @@ export async function getERC20TokenContext(
     user2ERC20Token,
     user3ERC20Token,
     owner2ERC20Token,
-    coldWalletERC20Token,
   };
 }
 
@@ -108,7 +96,7 @@ export async function getSQRVestingContext(
   users: Users,
   deployData?: string | ContractConfig,
 ): Promise<SQRVestingContext> {
-  const { owner, user1, user2, user3, owner2, coldWallet } = users;
+  const { owner, user1, user2, user3, owner2 } = users;
 
   const sqrVestingFactory = (await ethers.getContractFactory(
     SQR_VESTING_NAME,
@@ -121,9 +109,7 @@ export async function getSQRVestingContext(
   let ownerSQRVesting: SQRVesting;
 
   if (typeof deployData === 'string') {
-    ownerSQRVesting = sqrVestingFactory
-      .connect(owner)
-      .attach(deployData) as SQRVesting;
+    ownerSQRVesting = sqrVestingFactory.connect(owner).attach(deployData) as SQRVesting;
   } else {
     ownerSQRVesting = (await upgrades.deployProxy(
       sqrVestingFactory,
@@ -138,7 +124,6 @@ export async function getSQRVestingContext(
   const user2SQRVesting = ownerSQRVesting.connect(user2);
   const user3SQRVesting = ownerSQRVesting.connect(user3);
   const owner2SQRVesting = ownerSQRVesting.connect(owner2);
-  const coldWalletSQRVesting = ownerSQRVesting.connect(coldWallet);
 
   return {
     sqrVestingFactory,
@@ -149,7 +134,6 @@ export async function getSQRVestingContext(
     user2SQRVesting,
     user3SQRVesting,
     owner2SQRVesting,
-    coldWalletSQRVesting,
   };
 }
 
@@ -159,10 +143,7 @@ export async function getContext(
 ): Promise<ContextBase> {
   const users = await getUsers();
   const erc20TokenContext = await getERC20TokenContext(users, erc20TokenAddress);
-  const sqrVestingContext = await getSQRVestingContext(
-    users,
-    sqrVestingAddress,
-  );
+  const sqrVestingContext = await getSQRVestingContext(users, sqrVestingAddress);
 
   return {
     ...users,

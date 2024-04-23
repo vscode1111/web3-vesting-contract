@@ -6,7 +6,7 @@ export async function deploySQRVestingContractFixture(
   contractConfigParam?: Partial<ContractConfig>,
 ): Promise<ContextBase> {
   const users = await getUsers();
-  const { owner2Address, coldWalletAddress } = users;
+  const { owner2Address } = users;
 
   const erc20TokenContext = await getERC20TokenContext(users);
   const { erc20TokenAddress } = erc20TokenContext;
@@ -16,7 +16,6 @@ export async function deploySQRVestingContractFixture(
     ...contractConfigParam,
     newOwner: owner2Address,
     erc20Token: erc20TokenAddress,
-    coldWallet: coldWalletAddress,
   };
 
   const sqrVestingContext = await getSQRVestingContext(users, config);
