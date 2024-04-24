@@ -13,7 +13,7 @@ export function shouldBehaveCorrectDeployment(): void {
     });
 
     it('user1 tries to do something', async function () {
-      console.log(chainTime);
+      console.log(chainTime.toDate());
     });
   });
 }

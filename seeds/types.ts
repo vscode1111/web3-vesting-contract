@@ -1,25 +1,23 @@
-import { BigNumberish } from 'ethers';
-
 export interface ContractConfig {
   newOwner: string;
   erc20Token: string;
   startDate: number;
-  cliffDate: number;
-  firstUnlockPercent: number;
-  unlockPeriodPercent: number;
+  cliffPeriod: number;
+  firstUnlockPercent: bigint;
   unlockPeriod: number;
-  afterPurchaseCliffDate: number;
+  unlockPeriodPercent: bigint;
+  afterPurchaseCliffPeriod: number;
 }
 
 export type DeployContractArgs = [
   newOwner: string,
   erc20Token: string,
   startDate: number,
-  cliffDate: number,
-  firstUnlockPercent: BigNumberish,
-  unlockPeriodPercent: BigNumberish,
+  cliffPeriod: number,
+  firstUnlockPercent: bigint,
   unlockPeriod: number,
-  afterPurchaseCliffDate: number,
+  unlockPeriodPercent: bigint,
+  afterPurchaseCliffPeriod: number,
 ];
 
 export interface TokenConfig {

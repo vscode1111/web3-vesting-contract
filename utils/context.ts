@@ -1,5 +1,4 @@
-import { DeployProxyOptions } from '@openzeppelin/hardhat-upgrades/dist/utils';
-import { ethers, upgrades } from 'hardhat';
+import { ethers } from 'hardhat';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { getNetworkName } from '~common';
 import { ERC20_TOKEN_NAME, SQR_VESTING_NAME, TOKENS } from '~constants';
@@ -16,11 +15,6 @@ import {
   SQRVestingContext,
   Users,
 } from '~types';
-
-const OPTIONS: DeployProxyOptions = {
-  initializer: 'initialize',
-  kind: 'uups',
-};
 
 export function getAddresses(network: keyof DeployNetworks): Addresses {
   const sqrVestingAddress = TOKENS.SQR_VESTING[network];
@@ -111,11 +105,9 @@ export async function getSQRVestingContext(
   if (typeof deployData === 'string') {
     ownerSQRVesting = sqrVestingFactory.connect(owner).attach(deployData) as SQRVesting;
   } else {
-    ownerSQRVesting = (await upgrades.deployProxy(
-      sqrVestingFactory,
-      getContractArgs(deployData as ContractConfig),
-      OPTIONS,
-    )) as unknown as SQRVesting;
+    ownerSQRVesting = await sqrVestingFactory
+      .connect(owner)
+      .deploy(...getContractArgs(deployData as ContractConfig));
   }
 
   const sqrVestingAddress = await ownerSQRVesting.getAddress();
@@ -127,7 +119,7 @@ export async function getSQRVestingContext(
 
   return {
     sqrVestingFactory,
-    owner2SqrVestingFactory: owner2SqrVestingFactory,
+    owner2SqrVestingFactory,
     sqrVestingAddress,
     ownerSQRVesting,
     user1SQRVesting,

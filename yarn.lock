@@ -8499,9 +8499,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sqr-payment-gateway-contract@workspace:.":
+"sqr-vesting-contract@workspace:.":
   version: 0.0.0-use.local
-  resolution: "sqr-payment-gateway-contract@workspace:."
+  resolution: "sqr-vesting-contract@workspace:."
   dependencies:
     "@commitlint/cli": ^19.2.1
     "@commitlint/config-conventional": ^19.1.0

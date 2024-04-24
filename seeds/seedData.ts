@@ -1,8 +1,8 @@
 import dayjs from 'dayjs';
 import { toUnixTime, toWei } from '~common';
-import { MINUTES } from '~constants';
+import { DAYS, MINUTES, ZERO } from '~constants';
 import { DeployNetworkKey } from '~types';
-import { addSeconsToUnixTime } from '~utils';
+import { addSeconsToUnixTime, calculatePercentForContract } from '~utils';
 import { defaultNetwork } from '../hardhat.config';
 import { ContractConfig, DeployContractArgs, DeployTokenArgs, TokenConfig } from './types';
 
@@ -39,6 +39,11 @@ export const contractConfig: ContractConfig = {
   newOwner: '0x627Ab3fbC3979158f451347aeA288B0A3A47E1EF',
   erc20Token: '0x4072b57e9B3dA8eEB9F8998b69C868E9a1698E54',
   startDate: toUnixTime(now.add(1, 'days').toDate()),
+  cliffPeriod: 90 * DAYS,
+  firstUnlockPercent: calculatePercentForContract(10),
+  unlockPeriod: 1 * MINUTES,
+  unlockPeriodPercent: ZERO,
+  afterPurchaseCliffPeriod: 0,
   ...extContractConfig,
 };
 
@@ -47,11 +52,11 @@ export function getContractArgs(contractConfig: ContractConfig): DeployContractA
     newOwner,
     erc20Token,
     startDate,
-    cliffDate,
+    cliffPeriod: cliffDate,
     firstUnlockPercent,
-    unlockPeriodPercent,
     unlockPeriod,
-    afterPurchaseCliffDate,
+    unlockPeriodPercent,
+    afterPurchaseCliffPeriod: afterPurchaseCliffDate,
   } = contractConfig;
 
   return [
@@ -60,8 +65,8 @@ export function getContractArgs(contractConfig: ContractConfig): DeployContractA
     startDate,
     cliffDate,
     firstUnlockPercent,
-    unlockPeriodPercent,
     unlockPeriod,
+    unlockPeriodPercent,
     afterPurchaseCliffDate,
   ];
 }
@@ -84,41 +89,18 @@ export function getTokenArgs(newOnwer: string): DeployTokenArgs {
   ];
 }
 
-const userInitBalance = toWei(10_000, sqrDecimals) / priceDiv;
-const deposit1 = toWei(100, sqrDecimals) / priceDiv;
-const extraDeposit1 = toWei(2500, sqrDecimals) / priceDiv;
-const withdraw1 = toWei(30, sqrDecimals) / priceDiv;
-const extraWithdraw1 = toWei(3000, sqrDecimals) / priceDiv;
+const allocation1 = toWei(30_000, sqrDecimals) / priceDiv;
 
 export const seedData = {
-  zero: toWei(0),
-  userInitBalance,
+  zero: ZERO,
   totalAccountBalance: tokenConfig.initMint,
-  deposit1,
-  deposit2: deposit1 / userDiv,
-  deposit3: deposit1 / userDiv / userDiv,
-  extraDeposit1,
-  extraDeposit2: extraDeposit1 / userDiv,
-  extraDeposit3: extraDeposit1 / userDiv / userDiv,
-  withdraw1,
-  withdraw2: withdraw1 / userDiv,
-  withdraw3: withdraw1 / userDiv / userDiv,
-  extraWithdraw1,
-  extraWithdraw2: extraWithdraw1 / userDiv,
-  extraWithdraw3: extraWithdraw1 / userDiv / userDiv,
-  balanceLimit: toWei(100, sqrDecimals),
-  allowance: toWei(1000000, sqrDecimals),
+  companyVesting: toWei(100_000, sqrDecimals),
+  allocation1: allocation1,
+  allocation2: allocation1 / userDiv,
+  allocation3: allocation1 / userDiv / userDiv,
   balanceDelta: toWei(0.01, sqrDecimals),
+  timeDelta: 30,
   nowPlus1m: toUnixTime(now.add(1, 'minute').toDate()),
   startDatePlus1m: addSeconsToUnixTime(contractConfig.startDate, 1 * MINUTES),
   timeShift: 10,
-  invalidNonce: 999,
-  depositNonce1_0: 0,
-  depositNonce1_1: 1,
-  depositNonce2_0: 0,
-  depositNonce3_0: 0,
-  withdrawNonce1_0: 0,
-  withdrawNonce1_1: 1,
-  withdrawNonce2_0: 0,
-  withdrawNonce3_0: 0,
 };
