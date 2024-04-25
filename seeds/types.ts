@@ -6,7 +6,6 @@ export interface ContractConfig {
   firstUnlockPercent: bigint;
   unlockPeriod: number;
   unlockPeriodPercent: bigint;
-  afterPurchaseCliffPeriod: number;
 }
 
 export type DeployContractArgs = [
@@ -17,7 +16,6 @@ export type DeployContractArgs = [
   firstUnlockPercent: bigint,
   unlockPeriod: number,
   unlockPeriodPercent: bigint,
-  afterPurchaseCliffPeriod: number,
 ];
 
 export interface TokenConfig {

@@ -41,9 +41,8 @@ export const contractConfig: ContractConfig = {
   startDate: toUnixTime(now.add(1, 'days').toDate()),
   cliffPeriod: 90 * DAYS,
   firstUnlockPercent: calculatePercentForContract(10),
-  unlockPeriod: 1 * MINUTES,
-  unlockPeriodPercent: ZERO,
-  afterPurchaseCliffPeriod: 0,
+  unlockPeriod: 30 * DAYS,
+  unlockPeriodPercent: calculatePercentForContract(20),
   ...extContractConfig,
 };
 
@@ -56,7 +55,6 @@ export function getContractArgs(contractConfig: ContractConfig): DeployContractA
     firstUnlockPercent,
     unlockPeriod,
     unlockPeriodPercent,
-    afterPurchaseCliffPeriod: afterPurchaseCliffDate,
   } = contractConfig;
 
   return [
@@ -67,7 +65,6 @@ export function getContractArgs(contractConfig: ContractConfig): DeployContractA
     firstUnlockPercent,
     unlockPeriod,
     unlockPeriodPercent,
-    afterPurchaseCliffDate,
   ];
 }
 

@@ -13,4 +13,4 @@ export interface EventArgs<T> {
   args: T;
 }
 
-export type ClaimEvent = ClaimEvent.Event & EventArgs<[string, number]>;
+export type ClaimEventArgs = ClaimEvent.Event & EventArgs<[string, number]>;
