@@ -15,6 +15,7 @@ dotenvConfig({
 });
 
 const isCoverage = process.env.COVERAGE;
+const gasReporter = false;
 
 function getAccounts() {
   return [
@@ -54,7 +55,7 @@ const config: HardhatUserConfig = {
     },
   },
   gasReporter: {
-    enabled: false,
+    enabled: gasReporter,
     currency: 'USD',
     excludeContracts: [],
   },

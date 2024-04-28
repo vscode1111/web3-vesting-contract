@@ -1,14 +1,17 @@
 import { time } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
+import { ZeroAddress } from 'ethers';
 import { INITIAL_POSITIVE_CHECK_TEST_TITLE, waitTx } from '~common';
 import { DAYS } from '~constants';
 import { contractConfig, seedData } from '~seeds';
 import { addSeconsToUnixTime, calculateAllocation } from '~utils';
 import { custromError } from './testData';
-import { ClaimEventArgs } from './types';
+import { ClaimEventArgs, SetAllocationEventArgs, WithdrawExcessAmountEventArgs } from './types';
 import {
+  calculateNextClaimAt,
   checkTotalSQRBalance,
   findEvent,
+  findEvents,
   getERC20TokenBalance,
   loadSQRVestingFixture,
 } from './utils';
@@ -25,17 +28,40 @@ export function shouldBehaveCorrectFunding(): void {
     });
 
     it(INITIAL_POSITIVE_CHECK_TEST_TITLE, async function () {
-      expect(await this.owner2SQRVesting.getBalance()).eq(seedData.zero);
+      expect(await getERC20TokenBalance(this, this.owner2Address)).eq(seedData.totalAccountBalance);
 
-      const claimingInfo = await this.owner2SQRVesting.fetchClaimingInfo(this.user1Address);
-      const [allocation, claimed, remainedToClaim, available, canClaim, nextClaimingAt] =
-        claimingInfo;
+      expect(await this.owner2SQRVesting.getBalance()).eq(seedData.zero);
+      expect(await this.owner2SQRVesting.getTotalAllocated()).eq(seedData.zero);
+      expect(await this.owner2SQRVesting.getRequiredAmount()).eq(seedData.zero);
+      expect(await this.owner2SQRVesting.calculateExcessAmount()).eq(seedData.zero);
+
+      expect(await this.owner2SQRVesting.getAllocationCount()).eq(0);
+      expect(await this.owner2SQRVesting.isAllocationFinished(this.user1Address)).eq(true);
+
+      const claimInfo = await this.owner2SQRVesting.fetchClaimInfo(this.user1Address);
+      const [allocation, claimed, remains, available, canClaim, nextClaimAt] = claimInfo;
       expect(allocation).eq(seedData.zero);
       expect(claimed).eq(seedData.zero);
-      expect(remainedToClaim).eq(seedData.zero);
+      expect(remains).eq(seedData.zero);
       expect(available).eq(seedData.zero);
       expect(canClaim).eq(false);
-      expect(nextClaimingAt).closeTo(contractConfig.startDate, seedData.timeDelta);
+      expect(nextClaimAt).eq(0);
+    });
+
+    it('user1 tries to claim without allocation', async function () {
+      await expect(this.user1SQRVesting.claim()).revertedWithCustomError(
+        this.owner2SQRVesting,
+        custromError.nothingToClaim,
+      );
+    });
+
+    it('user1 tries to claim without allocation', async function () {
+      await this.owner2SQRVesting.setAllocation(this.user1Address, seedData.allocation1);
+      await time.increaseTo(addSeconsToUnixTime(contractConfig.startDate, seedData.timeShift));
+      await expect(this.user1SQRVesting.claim()).revertedWithCustomError(
+        this.owner2SQRVesting,
+        custromError.contractMustHaveSufficientFunds,
+      );
     });
 
     describe('contract has tokens for vesting', () => {
@@ -47,7 +73,102 @@ export function shouldBehaveCorrectFunding(): void {
         expect(await getERC20TokenBalance(this, this.sqrVestingAddress)).eq(
           seedData.companyVesting,
         );
+        expect(await this.owner2SQRVesting.getTotalAllocated()).eq(seedData.zero);
+        expect(await this.owner2SQRVesting.getRequiredAmount()).eq(seedData.zero);
+        expect(await this.owner2SQRVesting.calculateExcessAmount()).eq(seedData.companyVesting);
         expect(await this.owner2SQRVesting.getBalance()).eq(seedData.companyVesting);
+      });
+
+      it('user1 tries to set allocation without permission', async function () {
+        await expect(
+          this.user1SQRVesting.setAllocation(this.user1Address, seedData.allocation1),
+        ).revertedWithCustomError(this.owner2SQRVesting, custromError.ownableUnauthorizedAccount);
+      });
+
+      it('owner2 tries to set allocation using zero address', async function () {
+        await expect(
+          this.owner2SQRVesting.setAllocation(ZeroAddress, seedData.allocation1),
+        ).revertedWithCustomError(this.owner2SQRVesting, custromError.accountNotZeroAddress);
+      });
+
+      it('user1 tries to set allocations without permission', async function () {
+        await expect(
+          this.user1SQRVesting.setAllocations([this.user1Address], [seedData.allocation1]),
+        ).revertedWithCustomError(this.owner2SQRVesting, custromError.ownableUnauthorizedAccount);
+      });
+
+      it('owner2 tries to set allocations without equal array lengths', async function () {
+        await expect(
+          this.owner2SQRVesting.setAllocations(
+            [this.user1Address, this.user2Address],
+            [seedData.allocation1],
+          ),
+        ).revertedWithCustomError(this.owner2SQRVesting, custromError.arrayLengthshNotEqual);
+      });
+
+      it('owner2 is allowed to set allocations (check event)', async function () {
+        const receipt = await waitTx(
+          this.owner2SQRVesting.setAllocations(
+            [this.user1Address, this.user2Address, this.user3Address],
+            [seedData.allocation1, seedData.allocation2, seedData.allocation3],
+          ),
+        );
+
+        const eventLogs = findEvents<SetAllocationEventArgs>(receipt);
+        expect(eventLogs).not.undefined;
+        expect(eventLogs.length).eq(3);
+
+        const [eventLog1, eventLog2, eventLog3] = eventLogs;
+
+        const [account1, amount1] = eventLog1?.args;
+        expect(account1).eq(this.user1Address);
+        expect(amount1).eq(seedData.allocation1);
+
+        const [account2, amount2] = eventLog2?.args;
+        expect(account2).eq(this.user2Address);
+        expect(amount2).eq(seedData.allocation2);
+
+        const [account3, amount3] = eventLog3?.args;
+        expect(account3).eq(this.user3Address);
+        expect(amount3).eq(seedData.allocation3);
+      });
+
+      it('owner2 is allowed to set allocations (check event)', async function () {
+        const receipt = await waitTx(
+          this.owner2SQRVesting.setAllocations(
+            [this.user1Address, this.user2Address, this.user3Address],
+            [seedData.allocation1, seedData.allocation2, seedData.allocation3],
+          ),
+        );
+
+        const eventLogs = findEvents<SetAllocationEventArgs>(receipt);
+        expect(eventLogs).not.undefined;
+        expect(eventLogs.length).eq(3);
+
+        const [eventLog1, eventLog2, eventLog3] = eventLogs;
+
+        const [account1, amount1] = eventLog1?.args;
+        expect(account1).eq(this.user1Address);
+        expect(amount1).eq(seedData.allocation1);
+
+        const [account2, amount2] = eventLog2?.args;
+        expect(account2).eq(this.user2Address);
+        expect(amount2).eq(seedData.allocation2);
+
+        const [account3, amount3] = eventLog3?.args;
+        expect(account3).eq(this.user3Address);
+        expect(amount3).eq(seedData.allocation3);
+      });
+
+      it('owner2 is allowed to set allocation (check event)', async function () {
+        const receipt = await waitTx(
+          this.owner2SQRVesting.setAllocation(this.user1Address, seedData.allocation1),
+        );
+        const eventLog = findEvent<SetAllocationEventArgs>(receipt);
+        expect(eventLog).not.undefined;
+        const [account, amount] = eventLog?.args;
+        expect(account).eq(this.user1Address);
+        expect(amount).eq(seedData.allocation1);
       });
 
       describe('set first allocation', () => {
@@ -56,16 +177,33 @@ export function shouldBehaveCorrectFunding(): void {
         });
 
         it(INITIAL_POSITIVE_CHECK_TEST_TITLE, async function () {
-          const claimingInfo = await this.owner2SQRVesting.fetchClaimingInfo(this.user1Address);
+          expect(await this.owner2SQRVesting.getTotalAllocated()).eq(seedData.allocation1);
+          expect(await this.owner2SQRVesting.getRequiredAmount()).eq(seedData.allocation1);
+          expect(await this.owner2SQRVesting.calculateExcessAmount()).eq(
+            seedData.companyVesting - seedData.allocation1,
+          );
 
-          const [allocation, claimed, remainedToClaim, available, canClaim, nextClaimingAt] =
-            claimingInfo;
+          expect(await this.owner2SQRVesting.getAllocationCount()).eq(1);
+          expect(await this.owner2SQRVesting.isAllocationFinished(this.user1Address)).eq(false);
+
+          const claimInfo = await this.owner2SQRVesting.fetchClaimInfo(this.user1Address);
+          const [allocation, claimed, remains, available, canClaim, nextClaimAt] = claimInfo;
           expect(allocation).eq(seedData.allocation1);
           expect(claimed).eq(seedData.zero);
-          expect(remainedToClaim).eq(seedData.allocation1);
+          expect(remains).eq(seedData.allocation1);
           expect(available).eq(seedData.zero);
           expect(canClaim).eq(false);
-          expect(nextClaimingAt).closeTo(contractConfig.startDate, seedData.timeDelta);
+          expect(nextClaimAt).closeTo(contractConfig.startDate, seedData.timeDelta);
+        });
+
+        it('owner2 reset first allocation', async function () {
+          await this.owner2SQRVesting.setAllocation(this.user1Address, seedData.allocation2);
+
+          expect(await this.owner2SQRVesting.getTotalAllocated()).eq(seedData.allocation2);
+          expect(await this.owner2SQRVesting.getRequiredAmount()).eq(seedData.allocation2);
+          expect(await this.owner2SQRVesting.calculateExcessAmount()).eq(
+            seedData.companyVesting - seedData.allocation2,
+          );
         });
 
         describe('set time after start date', () => {
@@ -76,18 +214,25 @@ export function shouldBehaveCorrectFunding(): void {
           });
 
           it(INITIAL_POSITIVE_CHECK_TEST_TITLE, async function () {
-            const claimingInfo = await this.owner2SQRVesting.fetchClaimingInfo(this.user1Address);
+            expect(await this.owner2SQRVesting.getTotalAllocated()).eq(seedData.allocation1);
+            expect(await this.owner2SQRVesting.getRequiredAmount()).eq(seedData.allocation1);
+            expect(await this.owner2SQRVesting.calculateExcessAmount()).eq(
+              seedData.companyVesting - seedData.allocation1,
+            );
 
-            const [allocation, claimed, remainedToClaim, available, canClaim, nextClaimingAt] =
-              claimingInfo;
+            expect(await this.owner2SQRVesting.getAllocationCount()).eq(1);
+            expect(await this.owner2SQRVesting.isAllocationFinished(this.user1Address)).eq(false);
+
+            const claimInfo = await this.owner2SQRVesting.fetchClaimInfo(this.user1Address);
+            const [allocation, claimed, remains, available, canClaim, nextClaimAt] = claimInfo;
             expect(allocation).eq(seedData.allocation1);
             expect(claimed).eq(seedData.zero);
-            expect(remainedToClaim).eq(seedData.allocation1);
+            expect(remains).eq(seedData.allocation1);
             expect(available).eq(
               calculateAllocation(seedData.allocation1, contractConfig.firstUnlockPercent),
             );
             expect(canClaim).eq(true);
-            expect(nextClaimingAt).eq(seedData.zero);
+            expect(nextClaimAt).eq(0);
           });
 
           it('user1 is allowed to stake (check event)', async function () {
@@ -112,6 +257,14 @@ export function shouldBehaveCorrectFunding(): void {
                 contractConfig.firstUnlockPercent,
               );
 
+              expect(await this.owner2SQRVesting.getTotalAllocated()).eq(seedData.allocation1);
+              expect(await this.owner2SQRVesting.getRequiredAmount()).eq(
+                seedData.allocation1 - firstUnlockAllocation,
+              );
+              expect(await this.owner2SQRVesting.calculateExcessAmount()).eq(
+                seedData.companyVesting - seedData.allocation1,
+              );
+
               expect(await getERC20TokenBalance(this, this.sqrVestingAddress)).eq(
                 seedData.companyVesting - firstUnlockAllocation,
               );
@@ -119,6 +272,27 @@ export function shouldBehaveCorrectFunding(): void {
                 seedData.companyVesting - firstUnlockAllocation,
               );
               expect(await getERC20TokenBalance(this, this.user1Address)).eq(firstUnlockAllocation);
+
+              expect(await this.owner2SQRVesting.getAllocationCount()).eq(1);
+              expect(await this.owner2SQRVesting.isAllocationFinished(this.user1Address)).eq(false);
+
+              const claimInfo = await this.owner2SQRVesting.fetchClaimInfo(this.user1Address);
+              const [allocation, claimed, remains, available, canClaim, nextClaimAt] = claimInfo;
+              expect(allocation).eq(seedData.allocation1);
+              expect(claimed).eq(firstUnlockAllocation);
+              expect(remains).eq(seedData.allocation1 - firstUnlockAllocation);
+              expect(available).eq(seedData.zero);
+              expect(canClaim).eq(false);
+              expect(nextClaimAt).closeTo(
+                calculateNextClaimAt(contractConfig, 1),
+                seedData.timeDelta,
+              );
+            });
+
+            it('owner2 tries to reset first allocation which was enough claimed', async function () {
+              await expect(
+                this.owner2SQRVesting.setAllocation(this.user1Address, seedData.allocation2),
+              ).revertedWithCustomError(this.owner2SQRVesting, custromError.userStartedToClaim);
             });
 
             it('user1 tries to claim again in the same period immediately', async function () {
@@ -190,6 +364,14 @@ export function shouldBehaveCorrectFunding(): void {
                     contractConfig.firstUnlockPercent + contractConfig.unlockPeriodPercent,
                   );
 
+                  expect(await this.owner2SQRVesting.getTotalAllocated()).eq(seedData.allocation1);
+                  expect(await this.owner2SQRVesting.getRequiredAmount()).eq(
+                    seedData.allocation1 - unlockAllocation,
+                  );
+                  expect(await this.owner2SQRVesting.calculateExcessAmount()).eq(
+                    seedData.companyVesting - seedData.allocation1,
+                  );
+
                   expect(await getERC20TokenBalance(this, this.sqrVestingAddress)).eq(
                     seedData.companyVesting - unlockAllocation,
                   );
@@ -198,6 +380,24 @@ export function shouldBehaveCorrectFunding(): void {
                   );
 
                   expect(await getERC20TokenBalance(this, this.user1Address)).eq(unlockAllocation);
+
+                  expect(await this.owner2SQRVesting.getAllocationCount()).eq(1);
+                  expect(await this.owner2SQRVesting.isAllocationFinished(this.user1Address)).eq(
+                    false,
+                  );
+
+                  const claimInfo = await this.owner2SQRVesting.fetchClaimInfo(this.user1Address);
+                  const [allocation, claimed, remains, available, canClaim, nextClaimAt] =
+                    claimInfo;
+                  expect(allocation).eq(seedData.allocation1);
+                  expect(claimed).eq(unlockAllocation);
+                  expect(remains).eq(seedData.allocation1 - unlockAllocation);
+                  expect(available).eq(seedData.zero);
+                  expect(canClaim).eq(false);
+                  expect(nextClaimAt).closeTo(
+                    calculateNextClaimAt(contractConfig, 2),
+                    seedData.timeDelta,
+                  );
                 });
 
                 it('user1 tries to claim again in the same period with 1 day delay', async function () {
@@ -235,6 +435,16 @@ export function shouldBehaveCorrectFunding(): void {
                         BigInt(2) * contractConfig.unlockPeriodPercent,
                     );
 
+                    expect(await this.owner2SQRVesting.getTotalAllocated()).eq(
+                      seedData.allocation1,
+                    );
+                    expect(await this.owner2SQRVesting.getRequiredAmount()).eq(
+                      seedData.allocation1 - unlockAllocation,
+                    );
+                    expect(await this.owner2SQRVesting.calculateExcessAmount()).eq(
+                      seedData.companyVesting - seedData.allocation1,
+                    );
+
                     expect(await getERC20TokenBalance(this, this.sqrVestingAddress)).eq(
                       seedData.companyVesting - unlockAllocation,
                     );
@@ -244,6 +454,24 @@ export function shouldBehaveCorrectFunding(): void {
 
                     expect(await getERC20TokenBalance(this, this.user1Address)).eq(
                       unlockAllocation,
+                    );
+
+                    expect(await this.owner2SQRVesting.getAllocationCount()).eq(1);
+                    expect(await this.owner2SQRVesting.isAllocationFinished(this.user1Address)).eq(
+                      false,
+                    );
+
+                    const claimInfo = await this.owner2SQRVesting.fetchClaimInfo(this.user1Address);
+                    const [allocation, claimed, remains, available, canClaim, nextClaimAt] =
+                      claimInfo;
+                    expect(allocation).eq(seedData.allocation1);
+                    expect(claimed).eq(unlockAllocation);
+                    expect(remains).eq(seedData.allocation1 - unlockAllocation);
+                    expect(available).eq(seedData.zero);
+                    expect(canClaim).eq(false);
+                    expect(nextClaimAt).closeTo(
+                      calculateNextClaimAt(contractConfig, 3),
+                      seedData.timeDelta,
                     );
                   });
 
@@ -276,18 +504,41 @@ export function shouldBehaveCorrectFunding(): void {
                     });
 
                     it(INITIAL_POSITIVE_CHECK_TEST_TITLE, async function () {
-                      const unlockAllocation = seedData.allocation1,;
+                      expect(await this.owner2SQRVesting.getTotalAllocated()).eq(
+                        seedData.allocation1,
+                      );
+                      expect(await this.owner2SQRVesting.getRequiredAmount()).eq(seedData.zero);
+                      expect(await this.owner2SQRVesting.calculateExcessAmount()).eq(
+                        seedData.companyVesting - seedData.allocation1,
+                      );
 
                       expect(await getERC20TokenBalance(this, this.sqrVestingAddress)).eq(
-                        seedData.companyVesting - unlockAllocation,
+                        seedData.companyVesting - seedData.allocation1,
                       );
                       expect(await this.owner2SQRVesting.getBalance()).eq(
-                        seedData.companyVesting - unlockAllocation,
+                        seedData.companyVesting - seedData.allocation1,
                       );
 
                       expect(await getERC20TokenBalance(this, this.user1Address)).eq(
-                        unlockAllocation,
+                        seedData.allocation1,
                       );
+
+                      expect(await this.owner2SQRVesting.getAllocationCount()).eq(1);
+                      expect(
+                        await this.owner2SQRVesting.isAllocationFinished(this.user1Address),
+                      ).eq(true);
+
+                      const claimInfo = await this.owner2SQRVesting.fetchClaimInfo(
+                        this.user1Address,
+                      );
+                      const [allocation, claimed, remains, available, canClaim, nextClaimAt] =
+                        claimInfo;
+                      expect(allocation).eq(seedData.allocation1);
+                      expect(claimed).eq(seedData.allocation1);
+                      expect(remains).eq(seedData.zero);
+                      expect(available).eq(seedData.zero);
+                      expect(canClaim).eq(false);
+                      expect(nextClaimAt).eq(0);
                     });
 
                     it('user1 tries to claim again in the same period with 1 day delay', async function () {
@@ -302,6 +553,44 @@ export function shouldBehaveCorrectFunding(): void {
                         this.owner2SQRVesting,
                         custromError.nothingToClaim,
                       );
+                    });
+
+                    it('user1 tries to call withdrawExcessAmount without permission', async function () {
+                      await expect(
+                        this.user1SQRVesting.withdrawExcessAmount(),
+                      ).revertedWithCustomError(
+                        this.owner2SQRVesting,
+                        custromError.ownableUnauthorizedAccount,
+                      );
+                    });
+
+                    it('owner2 is allowed to withdrawExcessAmount (check event)', async function () {
+                      const excessReward = await this.owner2SQRVesting.calculateExcessAmount();
+
+                      const receipt = await waitTx(this.owner2SQRVesting.withdrawExcessAmount());
+
+                      const eventLog = findEvent<WithdrawExcessAmountEventArgs>(receipt);
+                      expect(eventLog).not.undefined;
+                      const [account, amount] = eventLog?.args;
+                      expect(account).eq(this.owner2Address);
+                      expect(amount).eq(excessReward);
+                    });
+
+                    describe('owner2 withdrew excess amount of tokens', () => {
+                      beforeEach(async function () {
+                        await this.owner2SQRVesting.withdrawExcessAmount();
+                      });
+
+                      it(INITIAL_POSITIVE_CHECK_TEST_TITLE, async function () {
+                        expect(await this.owner2SQRVesting.getBalance()).eq(seedData.zero);
+
+                        expect(await getERC20TokenBalance(this, this.owner2Address)).eq(
+                          seedData.totalAccountBalance - seedData.allocation1,
+                        );
+                        expect(await getERC20TokenBalance(this, this.user1Address)).eq(
+                          seedData.allocation1,
+                        );
+                      });
                     });
                   });
                 });

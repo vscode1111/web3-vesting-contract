@@ -6,7 +6,7 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 contract SQRVesting is Ownable, ReentrancyGuard {
   using SafeERC20 for IERC20;
@@ -16,17 +16,12 @@ contract SQRVesting is Ownable, ReentrancyGuard {
   string public constant VERSION = "1.0";
 
   IERC20 public erc20Token;
-  uint256 public startDate;
-  uint256 public cliffPeriod;
+  uint32 public startDate;
+  uint32 public cliffPeriod;
   uint256 public firstUnlockPercent;
-  uint256 public unlockPeriod;
+  uint32 public unlockPeriod;
   uint256 public unlockPeriodPercent;
 
-  struct Allocation {
-    uint256 amount;
-    uint256 claimed;
-    uint256 claimedAt;
-  }
   mapping(address => Allocation) public allocations;
 
   uint256 public constant PERCENT_DIVIDER = 1e18 * 100;
@@ -34,13 +29,28 @@ contract SQRVesting is Ownable, ReentrancyGuard {
   constructor(
     address _newOwner,
     address _erc20Token,
-    uint256 _startDate,
-    uint256 _cliffPeriod,
+    uint32 _startDate,
+    uint32 _cliffPeriod,
     uint256 _firstUnlockPercent,
-    uint256 _unlockPeriod,
+    uint32 _unlockPeriod,
     uint256 _unlockPeriodPercent
   ) Ownable(_newOwner) {
-    //ToDo: add checks
+    if (_erc20Token == address(0)) {
+      revert ERC20TokenNotZeroAddress();
+    }
+
+    if (_startDate < uint32(block.timestamp)) {
+      revert StartDateMustBeGreaterThanCurrentTime();
+    }
+
+    if (_unlockPeriod == 0) {
+      revert UnlockPeriodNotZero();
+    }
+
+    if (_unlockPeriodPercent == 0) {
+      revert UnlockPeriodPercentNotZero();
+    }
+
     erc20Token = IERC20(_erc20Token);
     startDate = _startDate;
     cliffPeriod = _cliffPeriod;
@@ -49,8 +59,28 @@ contract SQRVesting is Ownable, ReentrancyGuard {
     unlockPeriodPercent = _unlockPeriodPercent;
   }
 
-  event Claim(address indexed account, uint256 amount);
+  uint32 private _allocationCounter;
+  uint256 private totalReserved;
+  uint256 private totalAllocated;
 
+  struct Allocation {
+    uint256 amount;
+    uint256 claimed;
+    uint32 claimedAt;
+  }
+
+  event Claim(address indexed account, uint256 amount);
+  event SetAllocation(address indexed account, uint256 amount);
+  event WithdrawExcessAmount(address indexed to, uint256 amount);
+
+  error ERC20TokenNotZeroAddress();
+  error UnlockPeriodNotZero();
+  error UnlockPeriodPercentNotZero();
+  error StartDateMustBeGreaterThanCurrentTime();
+  error UserStartedToClaim(address account);
+  error ArrayLengthshNotEqual();
+  error AccountNotZeroAddress();
+  error ContractMustHaveSufficientFunds();
   error NothingToClaim();
 
   //Read methods-------------------------------------------
@@ -61,6 +91,10 @@ contract SQRVesting is Ownable, ReentrancyGuard {
 
   function canClaim(address account) public view returns (bool) {
     return (calculateClaimAmount(account) > 0);
+  }
+
+  function calculatePassedPeriod() public view returns (uint32) {
+    return ((uint32)(block.timestamp) - startDate - cliffPeriod) / unlockPeriod;
   }
 
   function calculateClaimAmount(address account) public view returns (uint256) {
@@ -81,38 +115,43 @@ contract SQRVesting is Ownable, ReentrancyGuard {
         return firstUnlockAmount;
       }
     } else {
-      uint256 unlockAmount = (amount * unlockPeriodPercent) / PERCENT_DIVIDER;
+      uint256 claimAmount = (calculatePassedPeriod() * (amount * unlockPeriodPercent)) /
+        PERCENT_DIVIDER +
+        firstUnlockAmount -
+        claimed;
 
-      uint256 duration = block.timestamp - startDate - cliffPeriod;
-      uint256 factor = duration / unlockPeriod;
-      uint256 claimable = factor * unlockAmount + firstUnlockAmount - claimed;
-
-      // console.log(100, unlockPeriod, duration, factor);
-      // console.log(101, unlockAmount, firstUnlockAmount, claimed);
-      // console.log(102, claimable);
-
-      if (claimable > amount - claimed) {
+      if (claimAmount > amount - claimed) {
         return amount - claimed;
       }
 
-      return claimable;
+      return claimAmount;
     }
 
     return 0;
   }
 
-  function isFinished(address account) external view returns (bool) {
+  function getAllocationCount() public view returns (uint32) {
+    return _allocationCounter;
+  }
+
+  function isAllocationFinished(address account) public view returns (bool) {
     return (allocations[account].claimed == allocations[account].amount);
   }
 
-  function nextClaimingAt(address wallet) public view returns (uint256) {
-    if (canClaim(wallet)) return 0;
-    if (allocations[wallet].claimed == 0) {
+  function calculateNextClaimAt(address account) public view returns (uint256) {
+    if (canClaim(account) || isAllocationFinished(account)) {
+      return 0;
+    }
+
+    if (allocations[account].claimed == 0) {
       return startDate;
     } else {
-      if (block.timestamp - startDate < cliffPeriod) return startDate + cliffPeriod + unlockPeriod;
-      uint256 periodsPassed = (block.timestamp - startDate - cliffPeriod) / unlockPeriod;
-      return startDate + cliffPeriod + unlockPeriod * (periodsPassed + 1);
+      if (block.timestamp - startDate < cliffPeriod) {
+        return startDate + cliffPeriod + unlockPeriod;
+      }
+
+      uint256 passedPeriod = calculatePassedPeriod();
+      return startDate + cliffPeriod + unlockPeriod * (passedPeriod + 1);
     }
   }
 
@@ -120,8 +159,8 @@ contract SQRVesting is Ownable, ReentrancyGuard {
     return allocations[wallet].amount - allocations[wallet].claimed;
   }
 
-  function fetchClaimingInfo(
-    address wallet
+  function fetchClaimInfo(
+    address account
   )
     external
     view
@@ -131,52 +170,104 @@ contract SQRVesting is Ownable, ReentrancyGuard {
       uint256 remains,
       uint256 available,
       bool _canClaim,
-      uint256 _nextClaimingAt
+      uint256 nextClaimAt
     )
   {
     return (
-      allocations[wallet].amount,
-      allocations[wallet].claimed,
-      calculateRemainAmount(wallet),
-      calculateClaimAmount(wallet),
-      canClaim(wallet),
-      nextClaimingAt(wallet)
+      allocations[account].amount,
+      allocations[account].claimed,
+      calculateRemainAmount(account),
+      calculateClaimAmount(account),
+      canClaim(account),
+      calculateNextClaimAt(account)
     );
+  }
+
+  function getTotalAllocated() public view returns (uint256) {
+    return totalAllocated;
+  }
+
+  function getRequiredAmount() public view returns (uint256) {
+    return totalReserved;
+  }
+
+  function calculateExcessAmount() public view returns (uint256) {
+    uint256 contractBalance = getBalance();
+    if (contractBalance > totalReserved) {
+      return contractBalance - totalReserved;
+    }
+    return 0;
   }
 
   //Write methods-------------------------------------------
 
-  function setAllocation(address to, uint256 amount) external onlyOwner {
-    allocations[to].amount = amount;
-    allocations[to].claimed = 0;
-    //ToDo: add event
+  function _setAllocation(address account, uint256 amount) private nonReentrant {
+    if (account == address(0)) {
+      revert AccountNotZeroAddress();
+    }
+
+    Allocation storage allocation = allocations[account];
+
+    if (allocation.claimed > 0) {
+      revert UserStartedToClaim(account);
+    }
+
+    totalAllocated -= allocation.amount;
+    totalReserved -= allocation.amount;
+
+    allocation.amount = amount;
+
+    totalAllocated += amount;
+    totalReserved += amount;
+
+    _allocationCounter++;
+
+    emit SetAllocation(account, amount);
   }
 
-  function batchSetAllocations(
+  function setAllocation(address account, uint256 amount) public onlyOwner {
+    _setAllocation(account, amount);
+  }
+
+  function setAllocations(
     address[] calldata recepients,
     uint256[] calldata amounts
   ) external onlyOwner {
-    //ToDo: add check length of arrays
-    for (uint32 i = 0; i < recepients.length; i++) {
-      allocations[recepients[i]].amount = amounts[i];
-      allocations[recepients[i]].claimed = 0;
+    if (recepients.length != amounts.length) {
+      revert ArrayLengthshNotEqual();
     }
-    //ToDo: add event
+
+    for (uint32 i = 0; i < recepients.length; i++) {
+      setAllocation(recepients[i], amounts[i]);
+    }
   }
 
   function claim() external nonReentrant {
     address sender = _msgSender();
-    uint256 claimable = calculateClaimAmount(sender);
+    uint256 claimAmount = calculateClaimAmount(sender);
 
-    if (claimable == 0) {
+    if (claimAmount == 0) {
       revert NothingToClaim();
     }
 
-    allocations[sender].claimed += claimable;
-    allocations[sender].claimedAt = block.timestamp;
+    if (getBalance() < claimAmount) {
+      revert ContractMustHaveSufficientFunds();
+    }
 
-    erc20Token.safeTransfer(sender, claimable);
+    allocations[sender].claimed += claimAmount;
+    allocations[sender].claimedAt = (uint32)(block.timestamp);
 
-    emit Claim(sender, claimable);
+    totalReserved -= claimAmount;
+
+    erc20Token.safeTransfer(sender, claimAmount);
+
+    emit Claim(sender, claimAmount);
+  }
+
+  function withdrawExcessAmount() external nonReentrant onlyOwner {
+    uint256 amount = calculateExcessAmount();
+    address to = owner();
+    erc20Token.safeTransfer(to, amount);
+    emit WithdrawExcessAmount(to, amount);
   }
 }

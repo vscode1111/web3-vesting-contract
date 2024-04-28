@@ -137,7 +137,6 @@ export async function attempt(
       console.log(e);
       if ('data' in e) {
         const errorFragment = contractFactory?.interface.getError(e.data);
-        console.log(333, errorFragment?.name);
         console.log(`Error data: ${e.data} -> ${errorFragment?.name}`);
       }
       await sleep(delay);

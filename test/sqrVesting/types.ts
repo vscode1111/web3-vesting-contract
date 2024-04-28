@@ -1,4 +1,8 @@
-import { ClaimEvent } from '~typechain-types/contracts/SQRVesting';
+import {
+  ClaimEvent,
+  SetAllocationEvent,
+  WithdrawExcessAmountEvent,
+} from '~typechain-types/contracts/SQRVesting';
 import { ContextBase } from '~types';
 
 type Fixture<T> = () => Promise<T>;
@@ -14,3 +18,8 @@ export interface EventArgs<T> {
 }
 
 export type ClaimEventArgs = ClaimEvent.Event & EventArgs<[string, number]>;
+
+export type SetAllocationEventArgs = SetAllocationEvent.Event & EventArgs<[string, number]>;
+
+export type WithdrawExcessAmountEventArgs = WithdrawExcessAmountEvent.Event &
+  EventArgs<[string, number]>;

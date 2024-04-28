@@ -35,6 +35,10 @@ export function findEvent<T>(receipt: TransactionReceipt) {
   return receipt.logs.find((log: any) => log.fragment) as T;
 }
 
+export function findEvents<T>(receipt: TransactionReceipt) {
+  return receipt.logs.filter((log: any) => log.fragment) as T[];
+}
+
 export async function getChainTime() {
   const chainTime = await time.latest();
   return dayjs(chainTime * 1000);
@@ -66,4 +70,12 @@ export async function loadSQRVestingFixture(
   }
 
   await checkTotalSQRBalance(that);
+}
+
+export function calculateNextClaimAt(contractConfig: ContractConfig, periodsPassed = 0) {
+  return (
+    contractConfig.startDate +
+    contractConfig.cliffPeriod +
+    periodsPassed * contractConfig.unlockPeriod
+  );
 }

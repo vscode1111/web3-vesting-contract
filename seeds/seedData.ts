@@ -10,7 +10,7 @@ const chainDecimals: Record<DeployNetworkKey, number> = {
   bsc: 8,
 };
 
-export const sqrDecimals = chainDecimals[defaultNetwork];
+export const erc20Decimals = chainDecimals[defaultNetwork];
 
 const isTest = true; //false - PROD!
 
@@ -72,8 +72,8 @@ export const tokenConfig: TokenConfig = {
   name: 'empty',
   symbol: 'empty',
   newOwner: '0x81aFFCB2FaCEcCaE727Fa4b1B2ef534a1Da67791',
-  initMint: toWei(1_000_000_000, sqrDecimals),
-  decimals: sqrDecimals,
+  initMint: toWei(1_000_000_000, erc20Decimals),
+  decimals: erc20Decimals,
 };
 
 export function getTokenArgs(newOnwer: string): DeployTokenArgs {
@@ -86,16 +86,18 @@ export function getTokenArgs(newOnwer: string): DeployTokenArgs {
   ];
 }
 
-const allocation1 = toWei(30_000, sqrDecimals) / priceDiv;
+const userInitBalance = toWei(10_000, erc20Decimals) / priceDiv;
+const allocation1 = toWei(30_000, erc20Decimals) / priceDiv;
 
 export const seedData = {
   zero: ZERO,
   totalAccountBalance: tokenConfig.initMint,
-  companyVesting: toWei(100_000, sqrDecimals),
-  allocation1: allocation1,
+  userInitBalance,
+  companyVesting: toWei(100_000, erc20Decimals),
+  allocation1,
   allocation2: allocation1 / userDiv,
   allocation3: allocation1 / userDiv / userDiv,
-  balanceDelta: toWei(0.01, sqrDecimals),
+  balanceDelta: toWei(0.01, erc20Decimals),
   timeDelta: 30,
   nowPlus1m: toUnixTime(now.add(1, 'minute').toDate()),
   startDatePlus1m: addSeconsToUnixTime(contractConfig.startDate, 1 * MINUTES),
