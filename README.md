@@ -1,4 +1,4 @@
-# Solidity smart contracts for SQR payment gateway functionality
+# Solidity smart contracts for SQR vesting functionality
 
 ## Getting Started
 
