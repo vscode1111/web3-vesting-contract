@@ -204,7 +204,6 @@ contract SQRVesting is Ownable, ReentrancyGuard {
       return totalReserved - contractBalance;
     }
     return 0;
-    // return totalReserved;
   }
 
   function calculateExcessAmount() public view returns (uint256) {
