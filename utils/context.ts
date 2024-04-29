@@ -95,10 +95,6 @@ export async function getSQRVestingContext(
   const sqrVestingFactory = (await ethers.getContractFactory(
     SQR_VESTING_NAME,
   )) as unknown as SQRVesting__factory;
-  const owner2SqrVestingFactory = (await ethers.getContractFactory(
-    SQR_VESTING_NAME,
-    owner2,
-  )) as unknown as SQRVesting__factory;
 
   let ownerSQRVesting: SQRVesting;
 
@@ -119,7 +115,6 @@ export async function getSQRVestingContext(
 
   return {
     sqrVestingFactory,
-    owner2SqrVestingFactory,
     sqrVestingAddress,
     ownerSQRVesting,
     user1SQRVesting,

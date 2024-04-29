@@ -9,13 +9,10 @@ export enum CONTRACT_LIST {
 
 export const TOKENS: Record<CONTRACT_LIST, DeployNetworks> = {
   SQR_VESTING: {
-    // bsc: '0xC85AC922880b2eD44a2D9a78739740990B6219f5', //Test
-    // bsc: '0x7D82090d0f7901Dfe612486E6D5A9A1d1c6e5f62', //Test
-    // bsc: '0x82eFbC9ec9546b78aD223dE39eBD1D5F9243E18f', //Test
-    // bsc: '0x258AF60a788fef0289994997c813D5933AcCd52A', //Test
-    // bsc: '0x5D27C778759e078BBe6D11A6cd802E41459Fe852', //Main - fcfs
-    // bsc: '0xe561e403093A19A770d5EE515aC1d5434275c026', //Main - sqrp-gated
-    bsc: '0x8e6585Dd84c1cDc340727f66183992AaCe7Bfc18', //Main - white-llst
+    // bsc: '0xc9b15Fe39ED32F8338b59C8A6ed885ACF5dC6b1f', //Test
+    // bsc: '0xee539859d7Eea7034835cd12af9EAc6347F37b56', //Test
+    // bsc: '0xB084a0De743043985603A7EE5565Bbd99446113d', //Test
+    bsc: '0x06565822ce89D298BAf86BBD39864441BFe3F9bd', //Test
     // bsc: '', //Prod
   },
 };

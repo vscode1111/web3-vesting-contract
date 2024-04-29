@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { Dayjs } from 'dayjs';
+// import { Dayjs } from 'dayjs';
 import { ZeroAddress } from 'ethers';
 import { ZERO } from '~constants';
 import { contractConfig } from '~seeds';
@@ -9,11 +9,11 @@ import { loadSQRVestingFixture } from './utils';
 
 export function shouldBehaveCorrectDeployment(): void {
   describe('deployment', () => {
-    let chainTime: Dayjs;
+    // let chainTime: Dayjs;
 
     beforeEach(async function () {
       await loadSQRVestingFixture(this, undefined, async (_chainTime, config) => {
-        chainTime = _chainTime;
+        // chainTime = _chainTime;
         return config;
       });
     });

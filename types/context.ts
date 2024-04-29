@@ -27,7 +27,6 @@ export interface ERC20TokenContext {
 
 export interface SQRVestingContext {
   sqrVestingFactory: SQRVesting__factory;
-  owner2SqrVestingFactory: SQRVesting__factory;
   sqrVestingAddress: string;
   ownerSQRVesting: SQRVesting;
   user1SQRVesting: SQRVesting;

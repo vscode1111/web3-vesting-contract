@@ -2,7 +2,7 @@ import { toUnixTime, toWei } from '~common';
 import { erc20Decimals } from '~seeds';
 
 export const verifyRequired = false;
-export const verifyArgsRequired = false;
+export const verifyArgsRequired = true;
 
 export const deployData = {
   userId1: 'tu1-f75c73b1-0f13-46ae-88f8-2048765c5ad4',
@@ -17,7 +17,3 @@ export const deployParams = {
   attemps: 1,
   delay: 0,
 };
-
-// export function getDeployParams(contractFactory?: ContractFactory) {
-//   return [TX_ATTEMPS, 0, contractFactory];
-// }

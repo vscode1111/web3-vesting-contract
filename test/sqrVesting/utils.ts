@@ -72,7 +72,7 @@ export async function loadSQRVestingFixture(
   await checkTotalSQRBalance(that);
 }
 
-export function calculateNextClaimAt(contractConfig: ContractConfig, periodsPassed = 0) {
+export function calculateClaimAt(contractConfig: ContractConfig, periodsPassed = 0) {
   return (
     contractConfig.startDate +
     contractConfig.cliffPeriod +

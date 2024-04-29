@@ -67,6 +67,7 @@ contract SQRVesting is Ownable, ReentrancyGuard {
     uint256 amount;
     uint256 claimed;
     uint32 claimedAt;
+    bool exist;
   }
 
   event Claim(address indexed account, uint256 amount);
@@ -165,21 +166,31 @@ contract SQRVesting is Ownable, ReentrancyGuard {
     external
     view
     returns (
-      uint256 allocation,
-      uint256 claimed,
-      uint256 remains,
-      uint256 available,
+      uint256 _amount,
+      uint256 _claimed,
+      uint32 claimedAt,
+      bool _exist,
+      uint256 _remain,
+      uint256 _available,
       bool _canClaim,
-      uint256 nextClaimAt
+      uint256 _nextClaimAt
     )
   {
+    Allocation storage allocation = allocations[account];
+    uint256 remain_ = calculateRemainAmount(account);
+    uint256 available_ = calculateClaimAmount(account);
+    bool canClaim_ = canClaim(account);
+    uint256 nextClaimAt_ = calculateNextClaimAt(account);
+
     return (
-      allocations[account].amount,
-      allocations[account].claimed,
-      calculateRemainAmount(account),
-      calculateClaimAmount(account),
-      canClaim(account),
-      calculateNextClaimAt(account)
+      allocation.amount,
+      allocation.claimed,
+      allocation.claimedAt,
+      allocation.exist,
+      remain_,
+      available_,
+      canClaim_,
+      nextClaimAt_
     );
   }
 
@@ -187,8 +198,13 @@ contract SQRVesting is Ownable, ReentrancyGuard {
     return totalAllocated;
   }
 
-  function getRequiredAmount() public view returns (uint256) {
-    return totalReserved;
+  function calculatedRequiredAmount() public view returns (uint256) {
+    uint256 contractBalance = getBalance();
+    if (totalReserved > contractBalance) {
+      return totalReserved - contractBalance;
+    }
+    return 0;
+    // return totalReserved;
   }
 
   function calculateExcessAmount() public view returns (uint256) {
@@ -212,15 +228,18 @@ contract SQRVesting is Ownable, ReentrancyGuard {
       revert UserStartedToClaim(account);
     }
 
+    if (!allocation.exist) {
+      _allocationCounter++;
+    }
+
     totalAllocated -= allocation.amount;
     totalReserved -= allocation.amount;
 
     allocation.amount = amount;
+    allocation.exist = true;
 
     totalAllocated += amount;
     totalReserved += amount;
-
-    _allocationCounter++;
 
     emit SetAllocation(account, amount);
   }

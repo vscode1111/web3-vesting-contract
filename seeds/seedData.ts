@@ -2,9 +2,18 @@ import dayjs from 'dayjs';
 import { toUnixTime, toWei } from '~common';
 import { DAYS, MINUTES, ZERO } from '~constants';
 import { DeployNetworkKey } from '~types';
-import { addSeconsToUnixTime, calculatePercentForContract } from '~utils';
+import { addSeconsToUnixTime } from '~utils/common';
+import { calculatePercentForContract } from '~utils/contract';
 import { defaultNetwork } from '../hardhat.config';
 import { ContractConfig, DeployContractArgs, DeployTokenArgs, TokenConfig } from './types';
+
+type DeployType = 'test' | 'main' | 'stage' | 'prod';
+
+const deployType: DeployType = (process.env.ENV as DeployType) ?? 'main';
+
+console.log('ENV', deployType);
+
+const isProd = deployType === ('prod' as any);
 
 const chainDecimals: Record<DeployNetworkKey, number> = {
   bsc: 8,
@@ -12,9 +21,7 @@ const chainDecimals: Record<DeployNetworkKey, number> = {
 
 export const erc20Decimals = chainDecimals[defaultNetwork];
 
-const isTest = true; //false - PROD!
-
-if (!isTest) {
+if (isProd) {
   throw 'Are you sure? It is PROD!';
 }
 
@@ -22,22 +29,38 @@ const priceDiv = BigInt(1);
 const userDiv = BigInt(2);
 export const now = dayjs();
 
-export const prodContractConfig: Partial<ContractConfig> = {
-  newOwner: '0xA8B8455ad9a1FAb1d4a3B69eD30A52fBA82549Bb', //Matan
-  erc20Token: '0x2B72867c32CF673F7b02d208B26889fEd353B1f8', //SQR
+export const contractConfigDeployMap: Record<DeployType, Partial<ContractConfig>> = {
+  test: {
+    newOwner: '0x627Ab3fbC3979158f451347aeA288B0A3A47E1EF',
+    erc20Token: '0x8364a68c32E581332b962D88CdC8dBe8b3e0EE9c', //tSQR2
+    startDate: toUnixTime(now.add(1, 'days').toDate()),
+    cliffPeriod: 90 * DAYS,
+    firstUnlockPercent: calculatePercentForContract(10),
+    unlockPeriod: 30 * DAYS,
+    unlockPeriodPercent: calculatePercentForContract(20),
+  },
+  main: {
+    newOwner: '0x627Ab3fbC3979158f451347aeA288B0A3A47E1EF',
+    erc20Token: '0x8364a68c32E581332b962D88CdC8dBe8b3e0EE9c', //tSQR2
+    // startDate: toUnixTime(now.add(5, 'minutes').toDate()),
+    startDate: 1714398657,
+    cliffPeriod: 5 * MINUTES,
+    firstUnlockPercent: calculatePercentForContract(10),
+    unlockPeriod: 1 * MINUTES,
+    unlockPeriodPercent: calculatePercentForContract(20),
+  },
+  stage: {},
+  prod: {
+    newOwner: '0xA8B8455ad9a1FAb1d4a3B69eD30A52fBA82549Bb', //Matan
+    erc20Token: '0x2B72867c32CF673F7b02d208B26889fEd353B1f8', //SQR
+  },
 };
 
-//Test
-export const mainContractConfig: Partial<ContractConfig> = {
-  newOwner: '0x627Ab3fbC3979158f451347aeA288B0A3A47E1EF', //My s-owner2
-  erc20Token: '0x8364a68c32E581332b962D88CdC8dBe8b3e0EE9c', //tSQR2
-};
-
-const extContractConfig = isTest ? mainContractConfig : prodContractConfig;
+const extContractConfig = contractConfigDeployMap[deployType];
 
 export const contractConfig: ContractConfig = {
   newOwner: '0x627Ab3fbC3979158f451347aeA288B0A3A47E1EF',
-  erc20Token: '0x4072b57e9B3dA8eEB9F8998b69C868E9a1698E54',
+  erc20Token: '0x8364a68c32E581332b962D88CdC8dBe8b3e0EE9c',
   startDate: toUnixTime(now.add(1, 'days').toDate()),
   cliffPeriod: 90 * DAYS,
   firstUnlockPercent: calculatePercentForContract(10),
@@ -101,5 +124,5 @@ export const seedData = {
   timeDelta: 30,
   nowPlus1m: toUnixTime(now.add(1, 'minute').toDate()),
   startDatePlus1m: addSeconsToUnixTime(contractConfig.startDate, 1 * MINUTES),
-  timeShift: 10,
+  // timeShift: 0,
 };
