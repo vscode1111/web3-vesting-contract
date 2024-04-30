@@ -26,7 +26,6 @@ if (isProd) {
 }
 
 const priceDiv = BigInt(1);
-const userDiv = BigInt(2);
 export const now = dayjs();
 
 export const contractConfigDeployMap: Record<DeployType, Partial<ContractConfig>> = {
@@ -109,17 +108,14 @@ export function getTokenArgs(newOnwer: string): DeployTokenArgs {
   ];
 }
 
-const userInitBalance = toWei(10_000, erc20Decimals) / priceDiv;
-const allocation1 = toWei(30_000, erc20Decimals) / priceDiv;
-
 export const seedData = {
   zero: ZERO,
+  tiny: BigInt(1),
   totalAccountBalance: tokenConfig.initMint,
-  userInitBalance,
-  companyVesting: toWei(100_000, erc20Decimals),
-  allocation1,
-  allocation2: allocation1 / userDiv,
-  allocation3: allocation1 / userDiv / userDiv,
+  companyVesting: toWei(120_000, erc20Decimals),
+  allocation1: toWei(30_000, erc20Decimals) / priceDiv,
+  allocation2: toWei(20_000, erc20Decimals) / priceDiv,
+  allocation3: toWei(50_000, erc20Decimals) / priceDiv,
   balanceDelta: toWei(0.01, erc20Decimals),
   timeDelta: 30,
   nowPlus1m: toUnixTime(now.add(1, 'minute').toDate()),

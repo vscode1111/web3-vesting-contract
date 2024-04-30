@@ -17,8 +17,8 @@ import {
   loadSQRVestingFixture,
 } from './utils';
 
-export function shouldBehaveCorrectFunding(): void {
-  describe('funding', () => {
+export function shouldBehaveCorrectFundingDefaultCase(): void {
+  describe('funding: default case', () => {
     beforeEach(async function () {
       await loadSQRVestingFixture(this);
       await checkTotalSQRBalance(this);
@@ -299,6 +299,7 @@ export function shouldBehaveCorrectFunding(): void {
                 seedData.companyVesting - seedData.allocation1,
               );
 
+              expect(await getERC20TokenBalance(this, this.user1Address)).eq(unlockAllocation);
               expect(await getERC20TokenBalance(this, this.sqrVestingAddress)).eq(
                 seedData.companyVesting - unlockAllocation,
               );
@@ -386,6 +387,7 @@ export function shouldBehaveCorrectFunding(): void {
                     seedData.companyVesting - seedData.allocation1,
                   );
 
+                  expect(await getERC20TokenBalance(this, this.user1Address)).eq(unlockAllocation);
                   expect(await getERC20TokenBalance(this, this.sqrVestingAddress)).eq(
                     seedData.companyVesting - unlockAllocation,
                   );
@@ -459,6 +461,9 @@ export function shouldBehaveCorrectFunding(): void {
                       seedData.companyVesting - seedData.allocation1,
                     );
 
+                    expect(await getERC20TokenBalance(this, this.user1Address)).eq(
+                      unlockAllocation,
+                    );
                     expect(await getERC20TokenBalance(this, this.sqrVestingAddress)).eq(
                       seedData.companyVesting - unlockAllocation,
                     );
