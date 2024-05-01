@@ -11,7 +11,7 @@ import {
 } from './utils';
 
 export function shouldBehaveCorrectFundingCase1(): void {
-  describe('funding case 1', () => {
+  describe('funding: case 1', () => {
     beforeEach(async function () {
       await loadSQRVestingFixture(this);
       await checkTotalSQRBalance(this);
@@ -21,7 +21,7 @@ export function shouldBehaveCorrectFundingCase1(): void {
       await checkTotalSQRBalance(this);
     });
 
-    it('user1 tries to claim without allocation', async function () {
+    it('user1, user2 and user3 claim tokens', async function () {
       const { allocation1, allocation2, allocation3 } = seedData;
       const amounts = [allocation1, allocation2, allocation3];
       await this.owner2SQRVesting.setAllocations(

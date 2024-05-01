@@ -6,8 +6,6 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-// import "hardhat/console.sol";
-
 contract SQRVesting is Ownable, ReentrancyGuard {
   using SafeERC20 for IERC20;
 
@@ -78,7 +76,6 @@ contract SQRVesting is Ownable, ReentrancyGuard {
   error UnlockPeriodNotZero();
   error UnlockPeriodPercentNotZero();
   error StartDateMustBeGreaterThanCurrentTime();
-  error UserStartedToClaim(address account);
   error ArrayLengthshNotEqual();
   error AccountNotZeroAddress();
   error ContractMustHaveSufficientFunds();
@@ -99,15 +96,22 @@ contract SQRVesting is Ownable, ReentrancyGuard {
     return ((uint32)(block.timestamp) - startDate - cliffPeriod) / unlockPeriod;
   }
 
+  function calculateMaxPeriod() public view returns (uint256) {
+    return PERCENT_DIVIDER / unlockPeriodPercent;
+  }
+
+  function calculateFinishDate() public view returns (uint32) {
+    return startDate + cliffPeriod + (uint32)(calculateMaxPeriod()) * unlockPeriod;
+  }
+
   function calculateClaimAmount(address account) public view returns (uint256) {
     if (block.timestamp < startDate) {
       return 0;
     }
 
-    Allocation storage allocation = allocations[account];
+    Allocation memory allocation = allocations[account];
 
-    uint256 firstUnlockAmount = (allocation.amount * firstUnlockPercent) /
-      PERCENT_DIVIDER;
+    uint256 firstUnlockAmount = (allocation.amount * firstUnlockPercent) / PERCENT_DIVIDER;
     uint256 claimed = allocation.claimed;
     uint256 amount = allocation.amount;
 
@@ -168,18 +172,18 @@ contract SQRVesting is Ownable, ReentrancyGuard {
     returns (
       uint256 _amount,
       uint256 _claimed,
-      uint32 claimedAt,
+      uint32 _claimedAt,
       bool _exist,
-      uint256 _remain,
-      uint256 _available,
       bool _canClaim,
+      uint256 _available,
+      uint256 _remain,
       uint256 _nextClaimAt
     )
   {
     Allocation storage allocation = allocations[account];
-    uint256 remain_ = calculateRemainAmount(account);
-    uint256 available_ = calculateClaimAmount(account);
     bool canClaim_ = canClaim(account);
+    uint256 available_ = calculateClaimAmount(account);
+    uint256 remain_ = calculateRemainAmount(account);
     uint256 nextClaimAt_ = calculateNextClaimAt(account);
 
     return (
@@ -187,9 +191,9 @@ contract SQRVesting is Ownable, ReentrancyGuard {
       allocation.claimed,
       allocation.claimedAt,
       allocation.exist,
-      remain_,
-      available_,
       canClaim_,
+      available_,
+      remain_,
       nextClaimAt_
     );
   }
@@ -223,10 +227,6 @@ contract SQRVesting is Ownable, ReentrancyGuard {
 
     Allocation storage allocation = allocations[account];
 
-    if (allocation.claimed > 0) {
-      revert UserStartedToClaim(account);
-    }
-
     if (!allocation.exist) {
       _allocationCounter++;
     }
@@ -244,8 +244,8 @@ contract SQRVesting is Ownable, ReentrancyGuard {
   }
 
   function setAllocation(address account, uint256 amount) public onlyOwner {
-    if (block.timestamp < startDate) {
-     revert CantChangeOngoingVesting();
+    if (block.timestamp > startDate) {
+      revert CantChangeOngoingVesting();
     }
 
     _setAllocation(account, amount);

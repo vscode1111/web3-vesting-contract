@@ -8,6 +8,6 @@ export const custromError = {
   arrayLengthshNotEqual: 'ArrayLengthshNotEqual',
   accountNotZeroAddress: 'AccountNotZeroAddress',
   contractMustHaveSufficientFunds: 'ContractMustHaveSufficientFunds',
-  userStartedToClaim: 'UserStartedToClaim',
+  cantChangeOngoingVesting: 'CantChangeOngoingVesting',
   nothingToClaim: 'NothingToClaim',
 };
