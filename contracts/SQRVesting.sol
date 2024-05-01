@@ -103,11 +103,10 @@ contract SQRVesting is Ownable, ReentrancyGuard {
       return 0;
     }
 
-    uint256 firstUnlockAmount = (allocations[account].amount * firstUnlockPercent) /
-      PERCENT_DIVIDER;
-
     Allocation storage allocation = allocations[account];
 
+    uint256 firstUnlockAmount = (allocation.amount * firstUnlockPercent) /
+      PERCENT_DIVIDER;
     uint256 claimed = allocation.claimed;
     uint256 amount = allocation.amount;
 
