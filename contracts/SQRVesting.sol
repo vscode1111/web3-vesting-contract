@@ -244,7 +244,10 @@ contract SQRVesting is Ownable, ReentrancyGuard {
   }
 
   function setAllocation(address account, uint256 amount) public onlyOwner {
-    require(block.timestamp < startDate, CantChangeOngoingVesting)
+    if (block.timestamp < startDate) {
+     revert CantChangeOngoingVesting();
+    }
+
     _setAllocation(account, amount);
   }
 
