@@ -83,6 +83,7 @@ contract SQRVesting is Ownable, ReentrancyGuard {
   error AccountNotZeroAddress();
   error ContractMustHaveSufficientFunds();
   error NothingToClaim();
+  error CantChangeOngoingVesting();
 
   //Read methods-------------------------------------------
 
@@ -243,6 +244,7 @@ contract SQRVesting is Ownable, ReentrancyGuard {
   }
 
   function setAllocation(address account, uint256 amount) public onlyOwner {
+    require(block.timestamp < startDate, CantChangeOngoingVesting)
     _setAllocation(account, amount);
   }
 
