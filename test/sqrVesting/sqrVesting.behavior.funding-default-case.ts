@@ -213,18 +213,31 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
           expect(nextClaimAt).closeTo(contractConfig.startDate, seedData.timeDelta);
         });
 
-        it('owner2 reset first allocation', async function () {
-          await this.owner2SQRVesting.setAllocation(this.user1Address, seedData.allocation2);
+        it('owner2 overridden first allocation to larger one', async function () {
+          const allocation = seedData.allocation1 * BigInt(2);
+          await this.owner2SQRVesting.setAllocation(this.user1Address, allocation);
 
-          expect(await this.owner2SQRVesting.getTotalAllocated()).eq(seedData.allocation2);
+          expect(await this.owner2SQRVesting.getTotalAllocated()).eq(allocation);
           expect(await this.owner2SQRVesting.calculatedRequiredAmount()).eq(seedData.zero);
           expect(await this.owner2SQRVesting.calculateExcessAmount()).eq(
-            seedData.companyVesting - seedData.allocation2,
+            seedData.companyVesting - allocation,
           );
           expect(await this.owner2SQRVesting.getAllocationCount()).eq(1);
         });
 
-        it('owner2 reset first allocation to zero', async function () {
+        it('owner2 overridden first allocation to smaller one', async function () {
+          const allocation = seedData.allocation1 / BigInt(2);
+          await this.owner2SQRVesting.setAllocation(this.user1Address, allocation);
+
+          expect(await this.owner2SQRVesting.getTotalAllocated()).eq(allocation);
+          expect(await this.owner2SQRVesting.calculatedRequiredAmount()).eq(seedData.zero);
+          expect(await this.owner2SQRVesting.calculateExcessAmount()).eq(
+            seedData.companyVesting - allocation,
+          );
+          expect(await this.owner2SQRVesting.getAllocationCount()).eq(1);
+        });
+
+        it('owner2 overridden first allocation to zero and init one', async function () {
           await this.owner2SQRVesting.setAllocation(this.user1Address, seedData.zero);
 
           expect(await this.owner2SQRVesting.getTotalAllocated()).eq(seedData.zero);
