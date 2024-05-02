@@ -276,10 +276,8 @@ contract SQRVesting is Ownable, ReentrancyGuard {
       revert ContractMustHaveSufficientFunds();
     }
 
-    Allocation storage allocation = allocations[sender];
-
-    allocation.claimed += claimAmount;
-    allocation.claimedAt = (uint32)(block.timestamp);
+    allocations[sender].claimed += claimAmount;
+    allocations[sender].claimedAt = (uint32)(block.timestamp);
 
     totalReserved -= claimAmount;
 
