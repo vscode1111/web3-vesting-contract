@@ -10,7 +10,7 @@ export function shouldBehaveCorrectFetching(): void {
       await loadSQRVestingFixture(this);
     });
 
-    it('should be correct init values', async function () {
+    it('should be correct init variables', async function () {
       //variables
       expect(await this.ownerSQRVesting.owner()).eq(this.owner2Address);
       expect(await this.ownerSQRVesting.VERSION()).eq(VERSION);
@@ -21,8 +21,9 @@ export function shouldBehaveCorrectFetching(): void {
       expect(await this.ownerSQRVesting.unlockPeriodPercent()).eq(
         contractConfig.unlockPeriodPercent,
       );
+    });
 
-      //methods
+    it('should be correct calculations of methods', async function () {
       const maxPeriod = Number(
         calculatePercentForContract(100) / contractConfig.unlockPeriodPercent,
       );
