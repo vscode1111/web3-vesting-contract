@@ -41,8 +41,8 @@ export const contractConfigDeployMap: Record<DeployType, Partial<ContractConfig>
   main: {
     newOwner: '0x627Ab3fbC3979158f451347aeA288B0A3A47E1EF',
     erc20Token: '0x8364a68c32E581332b962D88CdC8dBe8b3e0EE9c', //tSQR2
-    // startDate: toUnixTime(now.add(5, 'minutes').toDate()),
-    startDate: 1714579706,
+    startDate: toUnixTime(now.add(5, 'minutes').toDate()),
+    // startDate: 1714987635,
     cliffPeriod: 5 * MINUTES,
     firstUnlockPercent: calculatePercentForContract(10),
     unlockPeriod: 1 * MINUTES,

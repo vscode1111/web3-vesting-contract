@@ -3,6 +3,7 @@ export interface DeployNetworks {
 }
 
 export interface Addresses {
+  erc20TokenAddress: string;
   sqrVestingAddress: string;
 }
 

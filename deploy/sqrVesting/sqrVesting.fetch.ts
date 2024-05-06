@@ -14,6 +14,10 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
 
     const result = {
       owner: await owner2SQRVesting.owner(),
+      requiredAmount: await owner2SQRVesting.calculatedRequiredAmount(),
+      excessAmount: await owner2SQRVesting.calculateExcessAmount(),
+      passedPeriod: await owner2SQRVesting.calculatePassedPeriod(),
+      maxPeriod: await owner2SQRVesting.calculateMaxPeriod(),
       info: printClaimInfo(await owner2SQRVesting.fetchClaimInfo(user1Address)),
     };
 

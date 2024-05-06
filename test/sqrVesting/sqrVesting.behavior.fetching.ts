@@ -11,7 +11,6 @@ export function shouldBehaveCorrectFetching(): void {
     });
 
     it('should be correct init variables', async function () {
-      //variables
       expect(await this.ownerSQRVesting.owner()).eq(this.owner2Address);
       expect(await this.ownerSQRVesting.VERSION()).eq(VERSION);
       expect(await this.ownerSQRVesting.startDate()).eq(contractConfig.startDate);

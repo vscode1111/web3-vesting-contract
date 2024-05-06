@@ -1,7 +1,7 @@
 import { ethers } from 'hardhat';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { getNetworkName } from '~common';
-import { ERC20_TOKEN_NAME, SQR_VESTING_NAME, TOKENS } from '~constants';
+import { CONTRACTS, ERC20_TOKEN_NAME, SQR_VESTING_NAME } from '~constants';
 import { ContractConfig, getContractArgs, getTokenArgs } from '~seeds';
 import { ERC20Token } from '~typechain-types/contracts/ERC20Token';
 import { SQRVesting } from '~typechain-types/contracts/SQRVesting';
@@ -17,8 +17,10 @@ import {
 } from '~types';
 
 export function getAddresses(network: keyof DeployNetworks): Addresses {
-  const sqrVestingAddress = TOKENS.SQR_VESTING[network];
+  const erc20TokenAddress = CONTRACTS.ERC20_TOKEN[network];
+  const sqrVestingAddress = CONTRACTS.SQR_VESTING[network];
   return {
+    erc20TokenAddress,
     sqrVestingAddress,
   };
 }

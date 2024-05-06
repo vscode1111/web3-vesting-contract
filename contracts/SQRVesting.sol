@@ -37,6 +37,10 @@ contract SQRVesting is Ownable, ReentrancyGuard {
       revert ERC20TokenNotZeroAddress();
     }
 
+    if (_firstUnlockPercent > PERCENT_DIVIDER) {
+      revert FirstUnlockPercentMustBeLessThanPercentDivider();
+    }
+
     if (_startDate < uint32(block.timestamp)) {
       revert StartDateMustBeGreaterThanCurrentTime();
     }
@@ -73,6 +77,7 @@ contract SQRVesting is Ownable, ReentrancyGuard {
   event WithdrawExcessAmount(address indexed to, uint256 amount);
 
   error ERC20TokenNotZeroAddress();
+  error FirstUnlockPercentMustBeLessThanPercentDivider();
   error UnlockPeriodNotZero();
   error UnlockPeriodPercentNotZero();
   error StartDateMustBeGreaterThanCurrentTime();

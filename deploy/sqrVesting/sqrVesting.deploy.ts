@@ -17,16 +17,11 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     await sleep(pauseTime * 1000);
 
     console.log(`Deploying...`);
-    const { sqrVestingAddress } = await getSQRVestingContext(
-      await getUsers(),
-      contractConfig,
-    );
+    const { sqrVestingAddress } = await getSQRVestingContext(await getUsers(), contractConfig);
     console.log(`${SQR_VESTING_NAME} deployed to ${sqrVestingAddress}`);
     if (verifyRequired) {
       await verifyContract(sqrVestingAddress, hre, getContractArgsEx());
-      console.log(
-        `${SQR_VESTING_NAME} deployed and verified to ${sqrVestingAddress}`,
-      );
+      console.log(`${SQR_VESTING_NAME} deployed and verified to ${sqrVestingAddress}`);
     }
   }, hre);
 };

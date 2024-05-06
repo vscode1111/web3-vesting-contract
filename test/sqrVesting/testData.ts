@@ -3,6 +3,7 @@ export const custromError = {
   ownableInvalidOwner: 'OwnableInvalidOwner',
   erc20TokenNotZeroAddress: 'ERC20TokenNotZeroAddress',
   startDateMustBeGreaterThanCurrentTime: 'StartDateMustBeGreaterThanCurrentTime',
+  firstUnlockPercentMustBeLessThanPercentDivider: 'FirstUnlockPercentMustBeLessThanPercentDivider',
   unlockPeriodNotZero: 'UnlockPeriodNotZero',
   unlockPeriodPercentNotZero: 'UnlockPeriodPercentNotZero',
   arrayLengthshNotEqual: 'ArrayLengthshNotEqual',
