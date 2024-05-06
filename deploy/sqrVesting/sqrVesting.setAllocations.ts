@@ -17,14 +17,14 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     const { allocation1, allocation2, allocation3 } = seedData;
 
     const params = {
-      recepients: [user1Address, user2Address, user3Address],
+      recipients: [user1Address, user2Address, user3Address],
       amounts: [allocation1, allocation2, allocation3],
     };
 
     console.table(params);
 
     await waitTx(
-      owner2SQRVesting.setAllocations(params.recepients, params.amounts),
+      owner2SQRVesting.setAllocations(params.recipients, params.amounts),
       'setAllocations',
       deployParams.attemps,
       deployParams.delay,

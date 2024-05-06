@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity >=0.8.19;
+pragma solidity >=0.8.20;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
@@ -20,7 +20,7 @@ contract SQRVesting is Ownable, ReentrancyGuard {
   uint32 public unlockPeriod;
   uint256 public unlockPeriodPercent;
 
-  mapping(address => Allocation) public allocations;
+  mapping(address account => Allocation allocation) public allocations;
 
   uint256 public constant PERCENT_DIVIDER = 1e18 * 100;
 
@@ -257,15 +257,15 @@ contract SQRVesting is Ownable, ReentrancyGuard {
   }
 
   function setAllocations(
-    address[] calldata recepients,
+    address[] calldata recipients,
     uint256[] calldata amounts
   ) external onlyOwner {
-    if (recepients.length != amounts.length) {
+    if (recipients.length != amounts.length) {
       revert ArrayLengthshNotEqual();
     }
 
-    for (uint32 i = 0; i < recepients.length; i++) {
-      setAllocation(recepients[i], amounts[i]);
+    for (uint32 i = 0; i < recipients.length; i++) {
+      setAllocation(recipients[i], amounts[i]);
     }
   }
 
