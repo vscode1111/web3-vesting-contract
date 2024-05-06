@@ -11,7 +11,7 @@ contract SQRVesting is Ownable, ReentrancyGuard {
 
   //Variables, structs, errors, modifiers, events------------------------
 
-  string public constant VERSION = "1.0";
+  string public constant VERSION = "1.1";
 
   IERC20 public erc20Token;
   uint32 public startDate;
@@ -98,7 +98,11 @@ contract SQRVesting is Ownable, ReentrancyGuard {
   }
 
   function calculatePassedPeriod() public view returns (uint32) {
-    return ((uint32)(block.timestamp) - startDate - cliffPeriod) / unlockPeriod;
+    uint32 timestamp = (uint32)(block.timestamp);
+    if (timestamp > startDate + cliffPeriod) {
+      return (timestamp - startDate - cliffPeriod) / unlockPeriod;
+    }
+    return 0;
   }
 
   function calculateMaxPeriod() public view returns (uint256) {

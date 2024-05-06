@@ -32,7 +32,7 @@ export const contractConfigDeployMap: Record<DeployType, Partial<ContractConfig>
   test: {
     newOwner: '0x627Ab3fbC3979158f451347aeA288B0A3A47E1EF',
     erc20Token: '0x8364a68c32E581332b962D88CdC8dBe8b3e0EE9c', //tSQR2
-    startDate: toUnixTime(now.add(1, 'days').toDate()),
+    startDate: toUnixTime(now.add(5, 'days').toDate()),
     cliffPeriod: 90 * DAYS,
     firstUnlockPercent: calculatePercentForContract(10),
     unlockPeriod: 30 * DAYS,
@@ -41,12 +41,12 @@ export const contractConfigDeployMap: Record<DeployType, Partial<ContractConfig>
   main: {
     newOwner: '0x627Ab3fbC3979158f451347aeA288B0A3A47E1EF',
     erc20Token: '0x8364a68c32E581332b962D88CdC8dBe8b3e0EE9c', //tSQR2
-    startDate: toUnixTime(now.add(5, 'minutes').toDate()),
-    // startDate: 1714987635,
-    cliffPeriod: 5 * MINUTES,
-    firstUnlockPercent: calculatePercentForContract(10),
+    // startDate: toUnixTime(now.add(5, 'minutes').toDate()),
+    startDate: 1715010874,
+    cliffPeriod: 2 * MINUTES,
+    firstUnlockPercent: calculatePercentForContract(30),
     unlockPeriod: 1 * MINUTES,
-    unlockPeriodPercent: calculatePercentForContract(20),
+    unlockPeriodPercent: calculatePercentForContract(10),
   },
   stage: {},
   prod: {

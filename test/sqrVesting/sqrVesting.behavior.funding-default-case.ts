@@ -36,6 +36,8 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
       expect(await this.owner2SQRVesting.calculatedRequiredAmount()).eq(seedData.zero);
       expect(await this.owner2SQRVesting.calculateExcessAmount()).eq(seedData.zero);
 
+      expect(await this.owner2SQRVesting.calculatePassedPeriod()).eq(0);
+
       expect(await this.owner2SQRVesting.getAllocationCount()).eq(0);
       expect(await this.owner2SQRVesting.isAllocationFinished(this.user1Address)).eq(true);
 
@@ -197,6 +199,8 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
             seedData.companyVesting - seedData.allocation1,
           );
 
+          expect(await this.owner2SQRVesting.calculatePassedPeriod()).eq(0);
+
           expect(await this.owner2SQRVesting.getAllocationCount()).eq(1);
           expect(await this.owner2SQRVesting.isAllocationFinished(this.user1Address)).eq(false);
 
@@ -266,6 +270,8 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
               seedData.companyVesting - seedData.allocation1,
             );
 
+            expect(await this.owner2SQRVesting.calculatePassedPeriod()).eq(0);
+
             expect(await this.owner2SQRVesting.getAllocationCount()).eq(1);
             expect(await this.owner2SQRVesting.isAllocationFinished(this.user1Address)).eq(false);
 
@@ -305,6 +311,8 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
                 seedData.allocation1,
                 contractConfig.firstUnlockPercent,
               );
+
+              expect(await this.owner2SQRVesting.calculatePassedPeriod()).eq(0);
 
               expect(await this.owner2SQRVesting.getTotalAllocated()).eq(seedData.allocation1);
               expect(await this.owner2SQRVesting.calculatedRequiredAmount()).eq(seedData.zero);
@@ -397,6 +405,8 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
                     contractConfig.firstUnlockPercent + contractConfig.unlockPeriodPercent,
                   );
 
+                  expect(await this.owner2SQRVesting.calculatePassedPeriod()).eq(1);
+
                   expect(await this.owner2SQRVesting.getTotalAllocated()).eq(seedData.allocation1);
                   expect(await this.owner2SQRVesting.calculatedRequiredAmount()).eq(seedData.zero);
                   expect(await this.owner2SQRVesting.calculateExcessAmount()).eq(
@@ -466,6 +476,8 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
                       contractConfig.firstUnlockPercent +
                         BigInt(2) * contractConfig.unlockPeriodPercent,
                     );
+
+                    expect(await this.owner2SQRVesting.calculatePassedPeriod()).eq(2);
 
                     expect(await this.owner2SQRVesting.getTotalAllocated()).eq(
                       seedData.allocation1,
@@ -538,6 +550,8 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
                     });
 
                     it(INITIAL_POSITIVE_CHECK_TEST_TITLE, async function () {
+                      expect(await this.owner2SQRVesting.calculatePassedPeriod()).eq(10);
+
                       expect(await this.owner2SQRVesting.getTotalAllocated()).eq(
                         seedData.allocation1,
                       );
