@@ -16,7 +16,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     await waitTx(
       owner2SQRVesting.withdrawExcessAmount(),
       'withdrawExcessAmount',
-      deployParams.attemps,
+      deployParams.attempts,
       deployParams.delay,
       sqrVestingFactory,
     );

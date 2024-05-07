@@ -54,7 +54,7 @@ export async function getUsers(): Promise<Users> {
 
 export async function getERC20TokenContext(
   users: Users,
-  deployData?: string | { newOnwer: string },
+  deployData?: string | { newOwner: string },
 ): Promise<ERC20TokenContext> {
   const { owner, user1, user2, user3, owner2, owner2Address } = users;
 
@@ -67,8 +67,8 @@ export async function getERC20TokenContext(
   if (typeof deployData === 'string') {
     ownerERC20Token = testERC20TokenFactory.connect(owner).attach(deployData) as ERC20Token;
   } else {
-    const newOnwer = deployData?.newOnwer ?? owner2Address;
-    ownerERC20Token = await testERC20TokenFactory.connect(owner).deploy(...getTokenArgs(newOnwer));
+    const newOwner = deployData?.newOwner ?? owner2Address;
+    ownerERC20Token = await testERC20TokenFactory.connect(owner).deploy(...getTokenArgs(newOwner));
   }
 
   const erc20TokenAddress = await ownerERC20Token.getAddress();

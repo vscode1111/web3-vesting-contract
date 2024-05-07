@@ -16,7 +16,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     await waitTx(
       user3SQRVesting.claim(),
       'claim',
-      deployParams.attemps,
+      deployParams.attempts,
       deployParams.delay,
       sqrVestingFactory,
     );

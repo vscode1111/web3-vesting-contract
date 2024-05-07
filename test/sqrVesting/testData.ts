@@ -1,4 +1,4 @@
-export const custromError = {
+export const customError = {
   ownableUnauthorizedAccount: 'OwnableUnauthorizedAccount',
   ownableInvalidOwner: 'OwnableInvalidOwner',
   erc20TokenNotZeroAddress: 'ERC20TokenNotZeroAddress',
@@ -6,7 +6,7 @@ export const custromError = {
   firstUnlockPercentMustBeLessThanPercentDivider: 'FirstUnlockPercentMustBeLessThanPercentDivider',
   unlockPeriodNotZero: 'UnlockPeriodNotZero',
   unlockPeriodPercentNotZero: 'UnlockPeriodPercentNotZero',
-  arrayLengthshNotEqual: 'ArrayLengthshNotEqual',
+  arrayLengthsNotEqual: 'ArrayLengthsNotEqual',
   accountNotZeroAddress: 'AccountNotZeroAddress',
   contractMustHaveSufficientFunds: 'ContractMustHaveSufficientFunds',
   cantChangeOngoingVesting: 'CantChangeOngoingVesting',

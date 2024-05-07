@@ -2,7 +2,7 @@ import { time } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import { contractConfig, seedData } from '~seeds';
 import { calculateAllocation } from '~utils';
-import { custromError } from './testData';
+import { customError } from './testData';
 import {
   calculateClaimAt,
   checkTotalSQRBalance,
@@ -45,7 +45,7 @@ export function shouldBehaveCorrectFundingCase1(): void {
 
       await expect(this.user1SQRVesting.claim()).revertedWithCustomError(
         this.owner2SQRVesting,
-        custromError.nothingToClaim,
+        customError.nothingToClaim,
       );
 
       //User 2 gets first unlock
@@ -56,7 +56,7 @@ export function shouldBehaveCorrectFundingCase1(): void {
 
       await expect(this.user2SQRVesting.claim()).revertedWithCustomError(
         this.owner2SQRVesting,
-        custromError.nothingToClaim,
+        customError.nothingToClaim,
       );
 
       //Cliff passes and 1th period

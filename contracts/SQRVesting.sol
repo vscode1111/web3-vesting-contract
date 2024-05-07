@@ -11,7 +11,7 @@ contract SQRVesting is Ownable, ReentrancyGuard {
 
   //Variables, structs, errors, modifiers, events------------------------
 
-  string public constant VERSION = "1.1";
+  string public constant VERSION = "1.0";
 
   IERC20 public erc20Token;
   uint32 public startDate;
@@ -81,7 +81,7 @@ contract SQRVesting is Ownable, ReentrancyGuard {
   error UnlockPeriodNotZero();
   error UnlockPeriodPercentNotZero();
   error StartDateMustBeGreaterThanCurrentTime();
-  error ArrayLengthshNotEqual();
+  error ArrayLengthsNotEqual();
   error AccountNotZeroAddress();
   error ContractMustHaveSufficientFunds();
   error NothingToClaim();
@@ -265,7 +265,7 @@ contract SQRVesting is Ownable, ReentrancyGuard {
     uint256[] calldata amounts
   ) external onlyOwner {
     if (recipients.length != amounts.length) {
-      revert ArrayLengthshNotEqual();
+      revert ArrayLengthsNotEqual();
     }
 
     for (uint32 i = 0; i < recipients.length; i++) {

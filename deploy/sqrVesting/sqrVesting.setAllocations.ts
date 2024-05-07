@@ -26,7 +26,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     await waitTx(
       owner2SQRVesting.setAllocations(params.recipients, params.amounts),
       'setAllocations',
-      deployParams.attemps,
+      deployParams.attempts,
       deployParams.delay,
       sqrVestingFactory,
     );

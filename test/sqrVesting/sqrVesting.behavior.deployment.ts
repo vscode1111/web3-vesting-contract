@@ -3,7 +3,7 @@ import { ZeroAddress } from 'ethers';
 import { ZERO } from '~constants';
 import { contractConfig } from '~seeds';
 import { calculatePercentForContract, getSQRVestingContext, getUsers } from '~utils';
-import { custromError } from './testData';
+import { customError } from './testData';
 import { loadSQRVestingFixture } from './utils';
 
 export function shouldBehaveCorrectDeployment(): void {
@@ -19,7 +19,7 @@ export function shouldBehaveCorrectDeployment(): void {
           ...contractConfig,
           newOwner: ZeroAddress,
         }),
-      ).revertedWithCustomError(this.owner2SQRVesting, custromError.ownableInvalidOwner);
+      ).revertedWithCustomError(this.owner2SQRVesting, customError.ownableInvalidOwner);
     });
 
     it('owner tries to deploy with zero ERC20 token address', async function () {
@@ -29,7 +29,7 @@ export function shouldBehaveCorrectDeployment(): void {
           ...contractConfig,
           erc20Token: ZeroAddress,
         }),
-      ).revertedWithCustomError(this.owner2SQRVesting, custromError.erc20TokenNotZeroAddress);
+      ).revertedWithCustomError(this.owner2SQRVesting, customError.erc20TokenNotZeroAddress);
     });
 
     it('owner tries to deploy with invalid first unlock percent', async function () {
@@ -41,7 +41,7 @@ export function shouldBehaveCorrectDeployment(): void {
         }),
       ).revertedWithCustomError(
         this.owner2SQRVesting,
-        custromError.firstUnlockPercentMustBeLessThanPercentDivider,
+        customError.firstUnlockPercentMustBeLessThanPercentDivider,
       );
     });
 
@@ -54,7 +54,7 @@ export function shouldBehaveCorrectDeployment(): void {
         }),
       ).revertedWithCustomError(
         this.owner2SQRVesting,
-        custromError.startDateMustBeGreaterThanCurrentTime,
+        customError.startDateMustBeGreaterThanCurrentTime,
       );
     });
 
@@ -65,7 +65,7 @@ export function shouldBehaveCorrectDeployment(): void {
           ...contractConfig,
           unlockPeriod: 0,
         }),
-      ).revertedWithCustomError(this.owner2SQRVesting, custromError.unlockPeriodNotZero);
+      ).revertedWithCustomError(this.owner2SQRVesting, customError.unlockPeriodNotZero);
     });
 
     it('owner tries to deploy with zero unlock period percent', async function () {
@@ -75,7 +75,7 @@ export function shouldBehaveCorrectDeployment(): void {
           ...contractConfig,
           unlockPeriodPercent: ZERO,
         }),
-      ).revertedWithCustomError(this.owner2SQRVesting, custromError.unlockPeriodPercentNotZero);
+      ).revertedWithCustomError(this.owner2SQRVesting, customError.unlockPeriodPercentNotZero);
     });
   });
 }

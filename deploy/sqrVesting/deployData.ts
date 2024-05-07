@@ -10,6 +10,6 @@ export const deployData = {
 };
 
 export const deployParams = {
-  attemps: 1,
+  attempts: 1,
   delay: 0,
 };

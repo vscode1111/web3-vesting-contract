@@ -10,5 +10,24 @@
     "activityBar.background": "#1B340F",
     "titleBar.activeBackground": "#264816",
     "titleBar.activeForeground": "#F6FCF3"
-  }
+  },
+  "cSpell.words": [
+    "bignumber",
+    "commitlint",
+    "ethersproject",
+    "fastify",
+    "IIFE",
+    "Matan",
+    "merkletreejs",
+    "nomicfoundation",
+    "nomiclabs",
+    "pinst",
+    "postpublish",
+    "solcover",
+    "solcoverjs",
+    "solhint",
+    "testfiles",
+    "trivago",
+    "typechain"
+  ]
 }

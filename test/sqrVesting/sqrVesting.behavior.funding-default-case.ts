@@ -5,8 +5,8 @@ import { sum } from 'lodash';
 import { INITIAL_POSITIVE_CHECK_TEST_TITLE, waitTx } from '~common';
 import { DAYS } from '~constants';
 import { contractConfig, seedData } from '~seeds';
-import { addSeconsToUnixTime, calculateAllocation } from '~utils';
-import { custromError } from './testData';
+import { addSecondsToUnixTime, calculateAllocation } from '~utils';
+import { customError } from './testData';
 import { ClaimEventArgs, SetAllocationEventArgs, WithdrawExcessAmountEventArgs } from './types';
 import {
   calculateClaimAt,
@@ -57,7 +57,7 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
     it('user1 tries to claim without allocation', async function () {
       await expect(this.user1SQRVesting.claim()).revertedWithCustomError(
         this.owner2SQRVesting,
-        custromError.nothingToClaim,
+        customError.nothingToClaim,
       );
     });
 
@@ -66,7 +66,7 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
       await time.increaseTo(contractConfig.startDate);
       await expect(this.user1SQRVesting.claim()).revertedWithCustomError(
         this.owner2SQRVesting,
-        custromError.contractMustHaveSufficientFunds,
+        customError.contractMustHaveSufficientFunds,
       );
     });
 
@@ -98,19 +98,19 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
       it('user1 tries to set allocation without permission', async function () {
         await expect(
           this.user1SQRVesting.setAllocation(this.user1Address, seedData.allocation1),
-        ).revertedWithCustomError(this.owner2SQRVesting, custromError.ownableUnauthorizedAccount);
+        ).revertedWithCustomError(this.owner2SQRVesting, customError.ownableUnauthorizedAccount);
       });
 
       it('owner2 tries to set allocation using zero address', async function () {
         await expect(
           this.owner2SQRVesting.setAllocation(ZeroAddress, seedData.allocation1),
-        ).revertedWithCustomError(this.owner2SQRVesting, custromError.accountNotZeroAddress);
+        ).revertedWithCustomError(this.owner2SQRVesting, customError.accountNotZeroAddress);
       });
 
       it('user1 tries to set allocations without permission', async function () {
         await expect(
           this.user1SQRVesting.setAllocations([this.user1Address], [seedData.allocation1]),
-        ).revertedWithCustomError(this.owner2SQRVesting, custromError.ownableUnauthorizedAccount);
+        ).revertedWithCustomError(this.owner2SQRVesting, customError.ownableUnauthorizedAccount);
       });
 
       it('owner2 tries to set allocations without equal array lengths', async function () {
@@ -119,7 +119,7 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
             [this.user1Address, this.user2Address],
             [seedData.allocation1],
           ),
-        ).revertedWithCustomError(this.owner2SQRVesting, custromError.arrayLengthshNotEqual);
+        ).revertedWithCustomError(this.owner2SQRVesting, customError.arrayLengthsNotEqual);
       });
 
       it('owner2 is allowed to set allocations (check event)', async function () {
@@ -350,23 +350,23 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
                 this.owner2SQRVesting.setAllocation(this.user1Address, seedData.allocation2),
               ).revertedWithCustomError(
                 this.owner2SQRVesting,
-                custromError.cantChangeOngoingVesting,
+                customError.cantChangeOngoingVesting,
               );
             });
 
             it('user1 tries to claim again in the same period immediately', async function () {
               await expect(this.user1SQRVesting.claim()).revertedWithCustomError(
                 this.owner2SQRVesting,
-                custromError.nothingToClaim,
+                customError.nothingToClaim,
               );
             });
 
             it('user1 tries to claim again in the same period with 1 day delay after startDate', async function () {
-              await time.increaseTo(addSeconsToUnixTime(contractConfig.startDate, DAYS));
+              await time.increaseTo(addSecondsToUnixTime(contractConfig.startDate, DAYS));
 
               await expect(this.user1SQRVesting.claim()).revertedWithCustomError(
                 this.owner2SQRVesting,
-                custromError.nothingToClaim,
+                customError.nothingToClaim,
               );
             });
 
@@ -375,7 +375,7 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
 
               await expect(this.user1SQRVesting.claim()).revertedWithCustomError(
                 this.owner2SQRVesting,
-                custromError.nothingToClaim,
+                customError.nothingToClaim,
               );
             });
 
@@ -389,7 +389,7 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
 
                 await expect(this.user1SQRVesting.claim()).revertedWithCustomError(
                   this.owner2SQRVesting,
-                  custromError.nothingToClaim,
+                  customError.nothingToClaim,
                 );
               });
 
@@ -460,7 +460,7 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
 
                   await expect(this.user1SQRVesting.claim()).revertedWithCustomError(
                     this.owner2SQRVesting,
-                    custromError.nothingToClaim,
+                    customError.nothingToClaim,
                   );
                 });
 
@@ -539,7 +539,7 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
                     await time.increaseTo(calculateClaimAt(contractConfig, 2) + DAYS);
                     await expect(this.user1SQRVesting.claim()).revertedWithCustomError(
                       this.owner2SQRVesting,
-                      custromError.nothingToClaim,
+                      customError.nothingToClaim,
                     );
                   });
 
@@ -608,7 +608,7 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
                       await time.increaseTo(calculateClaimAt(contractConfig, 10) + DAYS);
                       await expect(this.user1SQRVesting.claim()).revertedWithCustomError(
                         this.owner2SQRVesting,
-                        custromError.nothingToClaim,
+                        customError.nothingToClaim,
                       );
                     });
 
@@ -617,7 +617,7 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
                         this.user1SQRVesting.withdrawExcessAmount(),
                       ).revertedWithCustomError(
                         this.owner2SQRVesting,
-                        custromError.ownableUnauthorizedAccount,
+                        customError.ownableUnauthorizedAccount,
                       );
                     });
 

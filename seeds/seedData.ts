@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 import { toUnixTime, toWei } from '~common';
 import { DAYS, MINUTES, ZERO } from '~constants';
 import { DeployNetworkKey } from '~types';
-import { addSeconsToUnixTime } from '~utils/common';
+import { addSecondsToUnixTime } from '~utils/common';
 import { calculatePercentForContract } from '~utils/contract';
 import { defaultNetwork } from '../hardhat.config';
 import { ContractConfig, DeployContractArgs, DeployTokenArgs, TokenConfig } from './types';
@@ -98,11 +98,11 @@ export const tokenConfig: TokenConfig = {
   decimals: erc20Decimals,
 };
 
-export function getTokenArgs(newOnwer: string): DeployTokenArgs {
+export function getTokenArgs(newOwner: string): DeployTokenArgs {
   return [
     tokenConfig.name,
     tokenConfig.symbol,
-    newOnwer,
+    newOwner,
     tokenConfig.initMint,
     tokenConfig.decimals,
   ];
@@ -119,6 +119,6 @@ export const seedData = {
   balanceDelta: toWei(0.01, erc20Decimals),
   timeDelta: 30,
   nowPlus1m: toUnixTime(now.add(1, 'minute').toDate()),
-  startDatePlus1m: addSeconsToUnixTime(contractConfig.startDate, 1 * MINUTES),
+  startDatePlus1m: addSecondsToUnixTime(contractConfig.startDate, 1 * MINUTES),
   // timeShift: 0,
 };
