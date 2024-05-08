@@ -1,7 +1,7 @@
 import { DeployFunction } from 'hardhat-deploy/types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { callWithTimerHre, waitTx } from '~common';
-import { SQR_VESTING_NAME } from '~constants';
+import { SQR_VESTING_NAME, TX_OVERRIDES } from '~constants';
 import { getAddressesFromHre, getContext, getUsers } from '~utils';
 import { deployData } from './deployData';
 
@@ -23,7 +23,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     };
 
     console.table(params);
-    await waitTx(user1ERC20Token.transfer(params.to, params.amount), 'transfer');
+    await waitTx(user1ERC20Token.transfer(params.to, params.amount, TX_OVERRIDES), 'transfer');
   }, hre);
 };
 

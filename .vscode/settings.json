@@ -3,6 +3,9 @@
   "editor.formatOnSave": true,
   "prettier.documentSelectors": ["**/*.sol"],
   "solidity.formatter": "prettier",
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "always"
+  },
   "workbench.colorCustomizations": {
     "tab.activeBackground": "#0c007a",
     "tab.hoverBackground": "#1500d3",

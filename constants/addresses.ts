@@ -24,7 +24,10 @@ export const CONTRACTS: Record<CONTRACT_LIST, DeployNetworks> = {
     // bsc: '0x91a60612b3473DF9A31e6369ff06CD7F539dcC37', //Test
     // bsc: '0x958181d2c94f66cD879B4743737eB2f458aE7DA1', //Test - not empty
     // bsc: '0x1465BB8d79c7E87a323bcA0d74F7192e8cD28Bbd', //Test
-    bsc: '0xFc321266c994EA06EA11D08F573Cf170Ee896598', //Test
+    // bsc: '0xFc321266c994EA06EA11D08F573Cf170Ee896598', //Test
+    // bsc: '0x80181AA57A12243781E15e21eF9E26B7e8cc8276', //Main
+    // bsc: '0x3982FC49E545c9E65AFe3dafA4D618937c118a77', //Main
+    bsc: '0x19e49b8c517c79716dbC783dE659Fe85512720a8', //Main
     // bsc: '', //Prod
   },
 };

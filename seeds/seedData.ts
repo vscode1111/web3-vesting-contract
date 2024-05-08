@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import { toUnixTime, toWei } from '~common';
-import { DAYS, MINUTES, ZERO } from '~constants';
+import { DAYS, HOURS, MINUTES, ZERO } from '~constants';
 import { DeployNetworkKey } from '~types';
 import { addSecondsToUnixTime } from '~utils/common';
 import { calculatePercentForContract } from '~utils/contract';
@@ -41,12 +41,13 @@ export const contractConfigDeployMap: Record<DeployType, Partial<ContractConfig>
   main: {
     newOwner: '0x627Ab3fbC3979158f451347aeA288B0A3A47E1EF',
     erc20Token: '0x8364a68c32E581332b962D88CdC8dBe8b3e0EE9c', //tSQR2
-    // startDate: toUnixTime(now.add(5, 'minutes').toDate()),
-    startDate: 1715010874,
-    cliffPeriod: 2 * MINUTES,
-    firstUnlockPercent: calculatePercentForContract(30),
-    unlockPeriod: 1 * MINUTES,
-    unlockPeriodPercent: calculatePercentForContract(10),
+    startDate: toUnixTime(now.add(15, 'minutes').toDate()),
+    // startDate: 1715010874,
+    cliffPeriod: 0,
+    firstUnlockPercent: calculatePercentForContract(50),
+    // unlockPeriod: 7 * DAYS,
+    unlockPeriod: 1 * HOURS,
+    unlockPeriodPercent: calculatePercentForContract(2),
   },
   stage: {},
   prod: {

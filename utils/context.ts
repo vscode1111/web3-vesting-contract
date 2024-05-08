@@ -1,7 +1,7 @@
 import { ethers } from 'hardhat';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { getNetworkName } from '~common';
-import { CONTRACTS, ERC20_TOKEN_NAME, SQR_VESTING_NAME } from '~constants';
+import { CONTRACTS, ERC20_TOKEN_NAME, SQR_VESTING_NAME, TX_OVERRIDES } from '~constants';
 import { ContractConfig, getContractArgs, getTokenArgs } from '~seeds';
 import { ERC20Token } from '~typechain-types/contracts/ERC20Token';
 import { SQRVesting } from '~typechain-types/contracts/SQRVesting';
@@ -105,7 +105,7 @@ export async function getSQRVestingContext(
   } else {
     ownerSQRVesting = await sqrVestingFactory
       .connect(owner)
-      .deploy(...getContractArgs(deployData as ContractConfig));
+      .deploy(...getContractArgs(deployData as ContractConfig), TX_OVERRIDES as any);
   }
 
   const sqrVestingAddress = await ownerSQRVesting.getAddress();
