@@ -152,7 +152,7 @@ contract SQRVesting is Ownable, ReentrancyGuard {
     return (allocations[account].claimed == allocations[account].amount);
   }
 
-  function calculateNextClaimAt(address account) public view returns (uint256) {
+  function calculateNextClaimAt(address account) public view returns (uint32) {
     if (canClaim(account) || isAllocationFinished(account)) {
       return 0;
     }
@@ -164,8 +164,8 @@ contract SQRVesting is Ownable, ReentrancyGuard {
         return startDate + cliffPeriod + unlockPeriod;
       }
 
-      uint256 passedPeriod = calculatePassedPeriod();
-      return startDate + cliffPeriod + (passedPeriod + 1) * unlockPeriod;
+      uint32 passedPeriod = calculatePassedPeriod();
+      return (uint32)(startDate + cliffPeriod + (passedPeriod + 1) * unlockPeriod);
     }
   }
 
@@ -186,14 +186,14 @@ contract SQRVesting is Ownable, ReentrancyGuard {
       bool _canClaim,
       uint256 _available,
       uint256 _remain,
-      uint256 _nextClaimAt
+      uint32 _nextClaimAt
     )
   {
-    Allocation storage allocation = allocations[account];
+    Allocation memory allocation = allocations[account];
     bool canClaim_ = canClaim(account);
     uint256 available_ = calculateClaimAmount(account);
     uint256 remain_ = calculateRemainAmount(account);
-    uint256 nextClaimAt_ = calculateNextClaimAt(account);
+    uint32 nextClaimAt_ = calculateNextClaimAt(account);
 
     return (
       allocation.amount,

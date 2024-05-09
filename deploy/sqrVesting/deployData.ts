@@ -6,7 +6,7 @@ export const verifyArgsRequired = true;
 
 export const deployData = {
   now: toUnixTime(),
-  initBalance: toWei(223_000, erc20Decimals),
+  initBalance: toWei(323_000, erc20Decimals),
 };
 
 export const deployParams = {
