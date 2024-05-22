@@ -1,6 +1,6 @@
 import { DeployFunction } from 'hardhat-deploy/types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { callWithTimerHre, waitTx } from '~common';
+import { callWithTimerHre, waitTx } from '~common-contract';
 import { SQR_VESTING_NAME, TX_OVERRIDES } from '~constants';
 import { getAddressesFromHre, getContext, getUsers } from '~utils';
 import { deployData } from './deployData';

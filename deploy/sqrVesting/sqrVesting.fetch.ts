@@ -1,6 +1,6 @@
 import { DeployFunction } from 'hardhat-deploy/types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { callWithTimerHre } from '~common';
+import { callWithTimerHre } from '~common-contract';
 import { SQR_VESTING_NAME } from '~constants';
 import { getAddressesFromHre, getSQRVestingContext, getUsers, printClaimInfo } from '~utils';
 

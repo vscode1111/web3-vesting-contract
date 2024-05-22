@@ -1,6 +1,6 @@
 import { ethers } from 'hardhat';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { getNetworkName } from '~common';
+import { getNetworkName } from '~common-contract';
 import { CONTRACTS, ERC20_TOKEN_NAME, SQR_VESTING_NAME, TX_OVERRIDES } from '~constants';
 import { ContractConfig, getContractArgs, getTokenArgs } from '~seeds';
 import { ERC20Token } from '~typechain-types/contracts/ERC20Token';
