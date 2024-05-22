@@ -11,7 +11,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     console.log(`${SQR_VESTING_NAME} ${erc20TokenAddress} is verify...`);
     const contractArg = getContractArgsEx();
     console.table(contractArg);
-    await verifyContract(erc20TokenAddress, hre, getContractArgsEx());
+    await verifyContract(erc20TokenAddress, hre, contractArg);
   }, hre);
 };
 
