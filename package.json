@@ -1,7 +1,7 @@
 {
   "name": "sqr-vesting-contract",
   "description": "Solidity smart contracts for SQR vesting functionality",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "scripts": {
     "clean": "shx rm -rf ./dist ./artifacts ./cache ./coverage ./typechain-types ./coverage.json && yarn typechain",
     "commit": "git-cz",
@@ -21,6 +21,7 @@
     "deploy:claim2": "hardhat deploy --tags SQRVesting:claim2",
     "deploy:claim3": "hardhat deploy --tags SQRVesting:claim3",
     "deploy:withdraw-excess-amount": "hardhat deploy --tags SQRVesting:withdraw-excess-amount",
+    "deploy:transfer-ownership": "hardhat deploy --tags SQRVesting:transfer-ownership",
     "deploy:publish-abi": "hardhat deploy --tags SQRVesting:publish-abi",
     "lint": "yarn lint:sol && yarn lint:ts && yarn prettier:check",
     "lint:sol": "solhint --config ./.solhint.json --max-warnings 0 \"contracts/**/*.sol\"",
