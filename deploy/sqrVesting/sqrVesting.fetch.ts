@@ -1,25 +1,46 @@
 import { DeployFunction } from 'hardhat-deploy/types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { callWithTimerHre } from '~common-contract';
+import { callWithTimerHre, printDate, printToken } from '~common-contract';
 import { SQR_VESTING_NAME } from '~constants';
-import { getAddressesFromHre, getSQRVestingContext, getUsers, printClaimInfo } from '~utils';
+import {
+  getAddressesFromHre,
+  getERC20TokenContext,
+  getSQRVestingContext,
+  getUsers,
+  printClaimInfo,
+} from '~utils';
+
+const userAddress_ = '0xdcC3D384a79aD184Ac949e777B7c587877DeF0af';
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<void> => {
   await callWithTimerHre(async () => {
     const { sqrVestingAddress } = await getAddressesFromHre(hre);
     console.log(`${SQR_VESTING_NAME} ${sqrVestingAddress} is fetching...`);
     const users = await getUsers();
-    const { user1Address } = users;
+
     const { owner2SQRVesting } = await getSQRVestingContext(users, sqrVestingAddress);
+    const erc20Token = await owner2SQRVesting.erc20Token();
+    const { ownerERC20Token } = await getERC20TokenContext(users, erc20Token);
+    const decimals = Number(await ownerERC20Token.decimals());
+    const tokenName = await ownerERC20Token.name();
+
+    // const userAddress = user1Address;
+    // const { user1Address } = users;
+    const userAddress = userAddress_;
 
     const result = {
       owner: await owner2SQRVesting.owner(),
-      allocationCount: await owner2SQRVesting.getAllocationCount(),
-      requiredAmount: await owner2SQRVesting.calculatedRequiredAmount(),
-      excessAmount: await owner2SQRVesting.calculateExcessAmount(),
-      passedPeriod: await owner2SQRVesting.calculatePassedPeriod(),
-      maxPeriod: await owner2SQRVesting.calculateMaxPeriod(),
-      info: printClaimInfo(await owner2SQRVesting.fetchClaimInfo(user1Address)),
+      allocationCount: Number(await owner2SQRVesting.getAllocationCount()),
+      requiredAmount: printToken(
+        await owner2SQRVesting.calculatedRequiredAmount(),
+        decimals,
+        tokenName,
+      ),
+      excessAmount: printToken(await owner2SQRVesting.calculateExcessAmount(), decimals, tokenName),
+      passedPeriod: Number(await owner2SQRVesting.calculatePassedPeriod()),
+      maxPeriod: Number(await owner2SQRVesting.calculateMaxPeriod()),
+      finishDate: printDate(await owner2SQRVesting.calculateFinishDate()),
+      info: printClaimInfo(await owner2SQRVesting.fetchClaimInfo(userAddress), decimals, tokenName),
     };
 
     console.log(result);

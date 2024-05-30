@@ -1,9 +1,10 @@
 import dayjs from 'dayjs';
 import { DAYS, MINUTES, toUnixTime, toWei } from '~common';
-import { ZERO } from '~constants';
+import { TokenAddressDescription } from '~common-contract';
+import { Token, ZERO } from '~constants';
 import { DeployNetworkKey } from '~types';
 import { addSecondsToUnixTime } from '~utils/common';
-import { calculatePercentForContract } from '~utils/contract';
+import { calculatePercentForContract, getTokenDescription } from '~utils/contracts';
 import { defaultNetwork } from '../hardhat.config';
 import { ContractConfig, DeployContractArgs, DeployTokenArgs, TokenConfig } from './types';
 
@@ -15,11 +16,12 @@ console.log('ENV', deployType);
 
 const isProd = deployType === ('prod' as any);
 
-const chainDecimals: Record<DeployNetworkKey, number> = {
-  bsc: 8,
+export const chainTokenDescription: Record<DeployNetworkKey, TokenAddressDescription> = {
+  bsc: getTokenDescription(Token.tSQR),
 };
 
-export const erc20Decimals = chainDecimals[defaultNetwork];
+export const { address: tokenAddress, decimals: tokenDecimals } =
+  chainTokenDescription[defaultNetwork];
 
 if (isProd) {
   throw 'Are you sure? It is PROD!';
@@ -31,7 +33,6 @@ export const now = dayjs();
 export const contractConfigDeployMap: Record<DeployType, Partial<ContractConfig>> = {
   test: {
     newOwner: '0x627Ab3fbC3979158f451347aeA288B0A3A47E1EF',
-    erc20Token: '0x8364a68c32E581332b962D88CdC8dBe8b3e0EE9c', //tSQR2
     startDate: toUnixTime(now.add(5, 'days').toDate()),
     cliffPeriod: 90 * DAYS,
     firstUnlockPercent: calculatePercentForContract(10),
@@ -40,7 +41,6 @@ export const contractConfigDeployMap: Record<DeployType, Partial<ContractConfig>
   },
   main: {
     newOwner: '0x627Ab3fbC3979158f451347aeA288B0A3A47E1EF',
-    erc20Token: '0x8364a68c32E581332b962D88CdC8dBe8b3e0EE9c', //tSQR2
     // startDate: toUnixTime(now.add(2, 'minutes').toDate()),
     startDate: 1715950237,
     cliffPeriod: 0,
@@ -60,7 +60,7 @@ const extContractConfig = contractConfigDeployMap[deployType];
 
 export const contractConfig: ContractConfig = {
   newOwner: '0x627Ab3fbC3979158f451347aeA288B0A3A47E1EF',
-  erc20Token: '0x8364a68c32E581332b962D88CdC8dBe8b3e0EE9c',
+  erc20Token: tokenAddress,
   startDate: toUnixTime(now.add(1, 'days').toDate()),
   cliffPeriod: 90 * DAYS,
   firstUnlockPercent: calculatePercentForContract(10),
@@ -95,8 +95,8 @@ export const tokenConfig: TokenConfig = {
   name: 'empty',
   symbol: 'empty',
   newOwner: '0x81aFFCB2FaCEcCaE727Fa4b1B2ef534a1Da67791',
-  initMint: toWei(1_000_000_000, erc20Decimals),
-  decimals: erc20Decimals,
+  initMint: toWei(1_000_000_000, tokenDecimals),
+  decimals: tokenDecimals,
 };
 
 export function getTokenArgs(newOwner: string): DeployTokenArgs {
@@ -113,11 +113,11 @@ export const seedData = {
   zero: ZERO,
   tiny: BigInt(1),
   totalAccountBalance: tokenConfig.initMint,
-  companyVesting: toWei(120_000, erc20Decimals),
-  allocation1: toWei(30_000, erc20Decimals) / priceDiv,
-  allocation2: toWei(20_000, erc20Decimals) / priceDiv,
-  allocation3: toWei(50_000, erc20Decimals) / priceDiv,
-  balanceDelta: toWei(0.01, erc20Decimals),
+  companyVesting: toWei(120_000, tokenDecimals),
+  allocation1: toWei(30_000, tokenDecimals) / priceDiv,
+  allocation2: toWei(20_000, tokenDecimals) / priceDiv,
+  allocation3: toWei(50_000, tokenDecimals) / priceDiv,
+  balanceDelta: toWei(0.01, tokenDecimals),
   timeDelta: 30,
   nowPlus1m: toUnixTime(now.add(1, 'minute').toDate()),
   startDatePlus1m: addSecondsToUnixTime(contractConfig.startDate, 1 * MINUTES),

@@ -1,3 +1,3 @@
 export * from './addresses';
-export * from './contract';
+export * from './contracts';
 export * from './numbers';
