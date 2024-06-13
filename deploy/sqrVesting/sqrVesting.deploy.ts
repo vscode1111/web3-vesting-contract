@@ -6,14 +6,14 @@ import { SQR_VESTING_NAME } from '~constants';
 import { contractConfig } from '~seeds';
 import { getSQRVestingContext, getUsers } from '~utils';
 import { verifyRequired } from './deployData';
-import { getContractArgsEx } from './utils';
+import { formatContractConfig, getContractArgsEx } from './utils';
 
 const pauseTime = 10;
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<void> => {
   await callWithTimerHre(async () => {
     console.log(`${SQR_VESTING_NAME} is deploying...`);
-    console.table(contractConfig);
+    console.table(formatContractConfig(contractConfig));
     console.log(`Pause ${pauseTime} sec to make sure...`);
     await sleep(pauseTime * 1000);
 

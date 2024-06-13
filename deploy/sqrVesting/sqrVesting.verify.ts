@@ -10,7 +10,11 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     const { sqrVestingAddress: erc20TokenAddress } = getAddressesFromHre(hre);
     console.log(`${SQR_VESTING_NAME} ${erc20TokenAddress} is verify...`);
     const contractArg = getContractArgsEx();
-    console.table(contractArg);
+
+    if (contractArg) {
+      console.table(contractArg);
+    }
+
     await verifyContract(erc20TokenAddress, hre, contractArg);
   }, hre);
 };

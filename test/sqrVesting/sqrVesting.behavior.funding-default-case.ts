@@ -42,8 +42,17 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
       expect(await this.owner2SQRVesting.isAllocationFinished(this.user1Address)).eq(true);
 
       const claimInfo = await this.owner2SQRVesting.fetchClaimInfo(this.user1Address);
-      const [amount, claimed, claimedAt, exist, canClaim, available, remain, nextClaimAt] =
-        claimInfo;
+      const {
+        amount,
+        claimed,
+        claimedAt,
+        exist,
+        canClaim,
+        available,
+        remain,
+        nextAvailable,
+        nextClaimAt,
+      } = claimInfo;
       expect(amount).eq(seedData.zero);
       expect(claimed).eq(seedData.zero);
       expect(claimedAt).eq(seedData.zero);
@@ -51,6 +60,7 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
       expect(canClaim).eq(false);
       expect(available).eq(seedData.zero);
       expect(remain).eq(seedData.zero);
+      expect(nextAvailable).eq(seedData.zero);
       expect(nextClaimAt).eq(0);
     });
 
@@ -205,8 +215,17 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
           expect(await this.owner2SQRVesting.isAllocationFinished(this.user1Address)).eq(false);
 
           const claimInfo = await this.owner2SQRVesting.fetchClaimInfo(this.user1Address);
-          const [amount, claimed, claimedAt, exist, canClaim, available, remain, nextClaimAt] =
-            claimInfo;
+          const {
+            amount,
+            claimed,
+            claimedAt,
+            exist,
+            canClaim,
+            available,
+            remain,
+            nextAvailable,
+            nextClaimAt,
+          } = claimInfo;
           expect(amount).eq(seedData.allocation1);
           expect(claimed).eq(seedData.zero);
           expect(claimedAt).eq(seedData.zero);
@@ -214,6 +233,7 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
           expect(canClaim).eq(false);
           expect(available).eq(seedData.zero);
           expect(remain).eq(seedData.allocation1);
+          expect(nextAvailable).eq(seedData.zero);
           expect(nextClaimAt).closeTo(contractConfig.startDate, seedData.timeDelta);
         });
 
@@ -276,8 +296,17 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
             expect(await this.owner2SQRVesting.isAllocationFinished(this.user1Address)).eq(false);
 
             const claimInfo = await this.owner2SQRVesting.fetchClaimInfo(this.user1Address);
-            const [amount, claimed, claimedAt, exist, canClaim, available, remain, nextClaimAt] =
-              claimInfo;
+            const {
+              amount,
+              claimed,
+              claimedAt,
+              exist,
+              canClaim,
+              available,
+              remain,
+              nextAvailable,
+              nextClaimAt,
+            } = claimInfo;
             expect(amount).eq(seedData.allocation1);
             expect(claimed).eq(seedData.zero);
             expect(claimedAt).eq(seedData.zero);
@@ -287,7 +316,10 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
               calculateAllocation(seedData.allocation1, contractConfig.firstUnlockPercent),
             );
             expect(remain).eq(seedData.allocation1);
-            expect(nextClaimAt).eq(0);
+            expect(nextAvailable).eq(
+              calculateAllocation(seedData.allocation1, contractConfig.firstUnlockPercent),
+            );
+            expect(nextClaimAt).closeTo(contractConfig.startDate, seedData.timeDelta);
           });
 
           it('user1 is allowed to stake (check event)', async function () {
@@ -333,8 +365,17 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
               expect(await this.owner2SQRVesting.isAllocationFinished(this.user1Address)).eq(false);
 
               const claimInfo = await this.owner2SQRVesting.fetchClaimInfo(this.user1Address);
-              const [amount, claimed, claimedAt, exist, canClaim, available, remain, nextClaimAt] =
-                claimInfo;
+              const {
+                amount,
+                claimed,
+                claimedAt,
+                exist,
+                canClaim,
+                available,
+                remain,
+                nextAvailable,
+                nextClaimAt,
+              } = claimInfo;
               expect(amount).eq(seedData.allocation1);
               expect(claimed).eq(unlockAllocation);
               expect(claimedAt).closeTo(contractConfig.startDate, seedData.timeDelta);
@@ -342,6 +383,7 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
               expect(canClaim).eq(false);
               expect(available).eq(seedData.zero);
               expect(remain).eq(seedData.allocation1 - unlockAllocation);
+              expect(nextAvailable).eq(seedData.zero);
               expect(nextClaimAt).closeTo(calculateClaimAt(contractConfig, 1), seedData.timeDelta);
             });
 
@@ -429,7 +471,7 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
                   );
 
                   const claimInfo = await this.owner2SQRVesting.fetchClaimInfo(this.user1Address);
-                  const [
+                  const {
                     amount,
                     claimed,
                     claimedAt,
@@ -437,8 +479,9 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
                     canClaim,
                     available,
                     remain,
+                    nextAvailable,
                     nextClaimAt,
-                  ] = claimInfo;
+                  } = claimInfo;
                   expect(amount).eq(seedData.allocation1);
                   expect(claimed).eq(unlockAllocation);
                   expect(claimedAt).closeTo(
@@ -449,6 +492,9 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
                   expect(canClaim).eq(false);
                   expect(available).eq(seedData.zero);
                   expect(remain).eq(seedData.allocation1 - unlockAllocation);
+                  expect(nextAvailable).eq(
+                    calculateAllocation(seedData.allocation1, contractConfig.unlockPeriodPercent),
+                  );
                   expect(nextClaimAt).closeTo(
                     calculateClaimAt(contractConfig, 2),
                     seedData.timeDelta,
@@ -509,7 +555,7 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
                     );
 
                     const claimInfo = await this.owner2SQRVesting.fetchClaimInfo(this.user1Address);
-                    const [
+                    const {
                       amount,
                       claimed,
                       claimedAt,
@@ -517,8 +563,9 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
                       canClaim,
                       available,
                       remain,
+                      nextAvailable,
                       nextClaimAt,
-                    ] = claimInfo;
+                    } = claimInfo;
                     expect(amount).eq(seedData.allocation1);
                     expect(claimed).eq(unlockAllocation);
                     expect(claimedAt).closeTo(
@@ -529,6 +576,9 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
                     expect(canClaim).eq(false);
                     expect(available).eq(seedData.zero);
                     expect(remain).eq(seedData.allocation1 - unlockAllocation);
+                    expect(nextAvailable).eq(
+                      calculateAllocation(seedData.allocation1, contractConfig.unlockPeriodPercent),
+                    );
                     expect(nextClaimAt).closeTo(
                       calculateClaimAt(contractConfig, 3),
                       seedData.timeDelta,
@@ -581,7 +631,7 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
                       const claimInfo = await this.owner2SQRVesting.fetchClaimInfo(
                         this.user1Address,
                       );
-                      const [
+                      const {
                         amount,
                         claimed,
                         claimedAt,
@@ -589,8 +639,9 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
                         canClaim,
                         available,
                         remain,
+                        nextAvailable,
                         nextClaimAt,
-                      ] = claimInfo;
+                      } = claimInfo;
                       expect(amount).eq(seedData.allocation1);
                       expect(claimed).eq(seedData.allocation1);
                       expect(claimedAt).closeTo(
@@ -601,6 +652,7 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
                       expect(canClaim).eq(false);
                       expect(available).eq(seedData.zero);
                       expect(remain).eq(seedData.zero);
+                      expect(nextAvailable).eq(seedData.zero);
                       expect(nextClaimAt).eq(0);
                     });
 

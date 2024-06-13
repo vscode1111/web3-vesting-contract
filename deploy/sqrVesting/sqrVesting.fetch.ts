@@ -24,9 +24,9 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     const decimals = Number(await ownerERC20Token.decimals());
     const tokenName = await ownerERC20Token.name();
 
-    // const userAddress = user1Address;
-    // const { user1Address } = users;
-    const userAddress = userAddress_;
+    const { user1Address } = users;
+    const userAddress = user1Address;
+    // const userAddress = userAddress_;
 
     const result = {
       owner: await owner2SQRVesting.owner(),

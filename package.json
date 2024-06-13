@@ -1,7 +1,7 @@
 {
   "name": "sqr-vesting-contract",
   "description": "Solidity smart contracts for SQR vesting functionality",
-  "version": "0.0.21",
+  "version": "0.0.22",
   "scripts": {
     "clean": "shx rm -rf ./dist ./artifacts ./cache ./coverage ./typechain-types ./coverage.json && yarn typechain",
     "commit": "git-cz",
@@ -12,7 +12,6 @@
     "deploy": "hardhat deploy",
     "deploy:accounts": "hardhat deploy --tags accounts",
     "deploy:deploy": "hardhat deploy --tags SQRVesting:deploy",
-    "deploy:upgrade": "hardhat deploy --tags SQRVesting:upgrade",
     "deploy:verify": "hardhat deploy --tags SQRVesting:verify",
     "deploy:fetch": "hardhat deploy --tags SQRVesting:fetch",
     "deploy:send-tokens": "hardhat deploy --tags SQRVesting:send-tokens",

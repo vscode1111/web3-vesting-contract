@@ -41,8 +41,8 @@ export const contractConfigDeployMap: Record<DeployType, Partial<ContractConfig>
   },
   main: {
     newOwner: '0x627Ab3fbC3979158f451347aeA288B0A3A47E1EF',
-    // startDate: toUnixTime(now.add(2, 'minutes').toDate()),
-    startDate: 1715950237,
+    startDate: toUnixTime(now.add(2, 'minutes').toDate()),
+    // startDate: 1718299329,
     cliffPeriod: 0,
     firstUnlockPercent: calculatePercentForContract(50),
     // unlockPeriod: 7 * DAYS,

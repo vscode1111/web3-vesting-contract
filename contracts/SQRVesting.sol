@@ -11,7 +11,7 @@ contract SQRVesting is Ownable, ReentrancyGuard {
 
   //Variables, structs, errors, modifiers, events------------------------
 
-  string public constant VERSION = "1.0";
+  string public constant VERSION = "1.1";
 
   IERC20 public erc20Token;
   uint32 public startDate;
@@ -72,6 +72,18 @@ contract SQRVesting is Ownable, ReentrancyGuard {
     bool exist;
   }
 
+  struct ClaimInfo {
+    uint256 amount;
+    uint256 claimed;
+    uint32 claimedAt;
+    bool exist;
+    bool canClaim;
+    uint256 available;
+    uint256 remain;
+    uint256 nextAvailable;
+    uint32 nextClaimAt;
+  }
+
   event Claim(address indexed account, uint256 amount);
   event SetAllocation(address indexed account, uint256 amount);
   event WithdrawExcessAmount(address indexed to, uint256 amount);
@@ -94,7 +106,7 @@ contract SQRVesting is Ownable, ReentrancyGuard {
   }
 
   function canClaim(address account) public view returns (bool) {
-    return (calculateClaimAmount(account) > 0);
+    return (calculateClaimAmount(account, 0) > 0);
   }
 
   function calculatePassedPeriod() public view returns (uint32) {
@@ -113,7 +125,10 @@ contract SQRVesting is Ownable, ReentrancyGuard {
     return startDate + cliffPeriod + (uint32)(calculateMaxPeriod()) * unlockPeriod;
   }
 
-  function calculateClaimAmount(address account) public view returns (uint256) {
+  function calculateClaimAmount(
+    address account,
+    uint32 periodOffset
+  ) public view returns (uint256) {
     if (block.timestamp < startDate) {
       return 0;
     }
@@ -129,7 +144,8 @@ contract SQRVesting is Ownable, ReentrancyGuard {
         return firstUnlockAmount;
       }
     } else {
-      uint256 claimAmount = (calculatePassedPeriod() * (amount * unlockPeriodPercent)) /
+      uint256 claimAmount = ((calculatePassedPeriod() + periodOffset) *
+        (amount * unlockPeriodPercent)) /
         PERCENT_DIVIDER +
         firstUnlockAmount -
         claimed;
@@ -152,8 +168,8 @@ contract SQRVesting is Ownable, ReentrancyGuard {
     return (allocations[account].claimed == allocations[account].amount);
   }
 
-  function calculateNextClaimAt(address account) public view returns (uint32) {
-    if (canClaim(account) || isAllocationFinished(account)) {
+  function calculateClaimAt(address account, uint32 periodOffset) public view returns (uint32) {
+    if (isAllocationFinished(account)) {
       return 0;
     }
 
@@ -165,7 +181,7 @@ contract SQRVesting is Ownable, ReentrancyGuard {
       }
 
       uint32 passedPeriod = calculatePassedPeriod();
-      return (uint32)(startDate + cliffPeriod + (passedPeriod + 1) * unlockPeriod);
+      return (uint32)(startDate + cliffPeriod + (passedPeriod + periodOffset) * unlockPeriod);
     }
   }
 
@@ -173,38 +189,26 @@ contract SQRVesting is Ownable, ReentrancyGuard {
     return allocations[wallet].amount - allocations[wallet].claimed;
   }
 
-  function fetchClaimInfo(
-    address account
-  )
-    external
-    view
-    returns (
-      uint256 _amount,
-      uint256 _claimed,
-      uint32 _claimedAt,
-      bool _exist,
-      bool _canClaim,
-      uint256 _available,
-      uint256 _remain,
-      uint32 _nextClaimAt
-    )
-  {
+  function fetchClaimInfo(address account) external view returns (ClaimInfo memory) {
     Allocation memory allocation = allocations[account];
     bool canClaim_ = canClaim(account);
-    uint256 available_ = calculateClaimAmount(account);
-    uint256 remain_ = calculateRemainAmount(account);
-    uint32 nextClaimAt_ = calculateNextClaimAt(account);
+    uint256 available = calculateClaimAmount(account, 0);
+    uint256 remain = calculateRemainAmount(account);
+    uint256 nextAvailable = calculateClaimAmount(account, 1);
+    uint32 nextClaimAt = calculateClaimAt(account, 1);
 
-    return (
-      allocation.amount,
-      allocation.claimed,
-      allocation.claimedAt,
-      allocation.exist,
-      canClaim_,
-      available_,
-      remain_,
-      nextClaimAt_
-    );
+    return
+      ClaimInfo(
+        allocation.amount,
+        allocation.claimed,
+        allocation.claimedAt,
+        allocation.exist,
+        canClaim_,
+        available,
+        remain,
+        nextAvailable,
+        nextClaimAt
+      );
   }
 
   function getTotalAllocated() public view returns (uint256) {
@@ -275,7 +279,7 @@ contract SQRVesting is Ownable, ReentrancyGuard {
 
   function claim() external nonReentrant {
     address sender = _msgSender();
-    uint256 claimAmount = calculateClaimAmount(sender);
+    uint256 claimAmount = calculateClaimAmount(sender, 0);
 
     if (claimAmount == 0) {
       revert NothingToClaim();
