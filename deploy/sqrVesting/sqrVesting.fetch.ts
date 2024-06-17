@@ -1,5 +1,6 @@
 import { DeployFunction } from 'hardhat-deploy/types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { DECIMALS } from '~common';
 import { callWithTimerHre, printDate, printToken } from '~common-contract';
 import { SQR_VESTING_NAME } from '~constants';
 import {
@@ -10,11 +11,11 @@ import {
   printClaimInfo,
 } from '~utils';
 
-const userAddress_ = '0xdcC3D384a79aD184Ac949e777B7c587877DeF0af';
+// const _userAddress = '0xdcC3D384a79aD184Ac949e777B7c587877DeF0af';
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<void> => {
   await callWithTimerHre(async () => {
-    const { sqrVestingAddress } = await getAddressesFromHre(hre);
+    const { sqrVestingAddress } = getAddressesFromHre(hre);
     console.log(`${SQR_VESTING_NAME} ${sqrVestingAddress} is fetching...`);
     const users = await getUsers();
 
@@ -26,10 +27,16 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
 
     const { user1Address } = users;
     const userAddress = user1Address;
-    // const userAddress = userAddress_;
+    // const userAddress = _userAddress;
 
     const result = {
       owner: await owner2SQRVesting.owner(),
+      erc20Token: await owner2SQRVesting.erc20Token(),
+      startDate: printDate(await owner2SQRVesting.startDate()),
+      cliffPeriod: await owner2SQRVesting.cliffPeriod(),
+      firstUnlockPercent: printToken(await owner2SQRVesting.firstUnlockPercent(), DECIMALS, '%'),
+      unlockPeriod: await owner2SQRVesting.unlockPeriod(),
+      unlockPeriodPercent: printToken(await owner2SQRVesting.unlockPeriodPercent(), DECIMALS, '%'),
       allocationCount: Number(await owner2SQRVesting.getAllocationCount()),
       requiredAmount: printToken(
         await owner2SQRVesting.calculatedRequiredAmount(),

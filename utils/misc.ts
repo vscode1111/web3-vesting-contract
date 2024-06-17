@@ -1,18 +1,6 @@
 import { printDate, printToken } from '~common-contract';
 import { SQRVesting } from '~typechain-types/contracts/SQRVesting';
 
-// type ClaimInfo = [bigint, bigint, bigint, boolean, boolean, bigint, bigint, bigint, bigint] & {
-//   _amount: bigint;
-//   _claimed: bigint;
-//   _claimedAt: bigint;
-//   _exist: boolean;
-//   _canClaim: boolean;
-//   _available: bigint;
-//   _remain: bigint;
-//   _nextClaimAt: bigint;
-//   nextAvailable: bigint;
-// };
-
 export function printClaimInfo(
   claimInfo: SQRVesting.ClaimInfoStruct,
   decimals: number,

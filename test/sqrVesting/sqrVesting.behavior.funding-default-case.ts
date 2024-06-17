@@ -233,7 +233,9 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
           expect(canClaim).eq(false);
           expect(available).eq(seedData.zero);
           expect(remain).eq(seedData.allocation1);
-          expect(nextAvailable).eq(seedData.zero);
+          expect(nextAvailable).eq(
+            calculateAllocation(seedData.allocation1, contractConfig.firstUnlockPercent),
+          );
           expect(nextClaimAt).closeTo(contractConfig.startDate, seedData.timeDelta);
         });
 

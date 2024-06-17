@@ -129,7 +129,7 @@ contract SQRVesting is Ownable, ReentrancyGuard {
     address account,
     uint32 periodOffset
   ) public view returns (uint256) {
-    if (block.timestamp < startDate) {
+    if (block.timestamp < startDate && periodOffset == 0) {
       return 0;
     }
 
