@@ -18,6 +18,7 @@
 **/node_modules
 **/typechain-types
 **/.openzeppelin
+**/exchange
 
 # files
 *.env

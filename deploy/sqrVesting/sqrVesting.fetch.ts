@@ -1,7 +1,7 @@
 import { DeployFunction } from 'hardhat-deploy/types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { DECIMALS } from '~common';
 import { callWithTimerHre, printDate, printToken } from '~common-contract';
+import { DEFAULT_DECIMALS } from '~common/constants';
 import { SQR_VESTING_NAME } from '~constants';
 import {
   getAddressesFromHre,
@@ -34,9 +34,17 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
       erc20Token: await owner2SQRVesting.erc20Token(),
       startDate: printDate(await owner2SQRVesting.startDate()),
       cliffPeriod: await owner2SQRVesting.cliffPeriod(),
-      firstUnlockPercent: printToken(await owner2SQRVesting.firstUnlockPercent(), DECIMALS, '%'),
+      firstUnlockPercent: printToken(
+        await owner2SQRVesting.firstUnlockPercent(),
+        DEFAULT_DECIMALS,
+        '%',
+      ),
       unlockPeriod: await owner2SQRVesting.unlockPeriod(),
-      unlockPeriodPercent: printToken(await owner2SQRVesting.unlockPeriodPercent(), DECIMALS, '%'),
+      unlockPeriodPercent: printToken(
+        await owner2SQRVesting.unlockPeriodPercent(),
+        DEFAULT_DECIMALS,
+        '%',
+      ),
       allocationCount: Number(await owner2SQRVesting.getAllocationCount()),
       requiredAmount: printToken(
         await owner2SQRVesting.calculatedRequiredAmount(),

@@ -1,4 +1,4 @@
-import { DECIMALS } from '~common';
+import { DEFAULT_DECIMALS } from '~common';
 import { printDate, printToken } from '~common-contract';
 import { ContractConfig, contractConfig, getContractArgs } from '~seeds';
 import { verifyArgsRequired } from './deployData';
@@ -13,7 +13,7 @@ export function formatContractConfig(contractConfig: ContractConfig) {
   return {
     ...contractConfig,
     startDate: printDate(startDate),
-    firstUnlockPercent: printToken(firstUnlockPercent, DECIMALS, '%'),
-    unlockPeriodPercent: printToken(unlockPeriodPercent, DECIMALS, '%'),
+    firstUnlockPercent: printToken(firstUnlockPercent, DEFAULT_DECIMALS, '%'),
+    unlockPeriodPercent: printToken(unlockPeriodPercent, DEFAULT_DECIMALS, '%'),
   };
 }
