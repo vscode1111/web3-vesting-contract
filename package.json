@@ -16,7 +16,8 @@
     "deploy:fetch": "hardhat deploy --tags SQRVesting:fetch",
     "deploy:send-tokens": "hardhat deploy --tags SQRVesting:send-tokens",
     "deploy:set-allocations": "hardhat deploy --tags SQRVesting:set-allocations",
-    "deploy:generate-allocations-file": "hardhat deploy --tags SQRVesting:generate-allocations-file",
+    "deploy:generate-random-allocations": "hardhat deploy --tags SQRVesting:generate-random-allocations",
+    "deploy:generate-allocations-from-db": "hardhat deploy --tags SQRVesting:generate-allocations-from-db",
     "deploy:massive-set-allocations": "hardhat deploy --tags SQRVesting:massive-set-allocations",
     "deploy:claim1": "hardhat deploy --tags SQRVesting:claim1",
     "deploy:claim2": "hardhat deploy --tags SQRVesting:claim2",
@@ -66,6 +67,7 @@
     "@types/lodash": "^4.17.4",
     "@types/mocha": "^10.0.6",
     "@types/node": "^20.14.0",
+    "@types/pg": "^8.11.6",
     "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^7.12.0",
     "@typescript-eslint/parser": "^7.12.0",
@@ -118,11 +120,11 @@
     "typescript",
     "typechain"
   ],
-  "packageManager": "yarn@3.2.1",
   "publishConfig": {
     "access": "public"
   },
   "dependencies": {
-    "decimal.js": "^10.4.3"
+    "decimal.js": "^10.4.3",
+    "pg": "^8.12.0"
   }
 }

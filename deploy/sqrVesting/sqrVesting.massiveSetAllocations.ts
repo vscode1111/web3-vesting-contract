@@ -8,6 +8,12 @@ import { SQR_VESTING_NAME, TX_OVERRIDES } from '~constants';
 import { contractConfig } from '~seeds';
 import { getAddressesFromHre, getContext, getERC20TokenContext, getUsers } from '~utils';
 import { getExchangeDir } from '../utils';
+import {
+  BASIC_NUMBER_DELIMITER,
+  CELL_SEPARATOR,
+  LINE_SEPARATOR,
+  TARGET_NUMBER_DELIMITER,
+} from './constants';
 import { AllocationRecord } from './types';
 
 const CHUNK_SIZE = 100;
@@ -25,14 +31,34 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     const decimals = Number(await owner2ERC20Token.decimals());
 
     const exchangeDir = getExchangeDir();
-    const sourcePath = `${exchangeDir}/allocations.txt`;
+    const sourcePath = `${exchangeDir}/allocations.csv`;
     const content = readFileSync(sourcePath, { encoding: 'utf8', flag: 'r' });
 
-    const allocationRecords: AllocationRecord[] = convertContentToArray2D(content).map((row) => ({
-      address: row[0],
-      // amount: BigInt(row[1]),
-      amount: toWeiWithFixed(Number(row[1]), decimals),
-    }));
+    const rawRecords = convertContentToArray2D(content, LINE_SEPARATOR, CELL_SEPARATOR);
+    rawRecords.shift();
+
+    const allocationRecords: AllocationRecord[] = [];
+
+    rawRecords.forEach((row) => {
+      if (row.length < 2) {
+        return;
+      }
+
+      const rawAddress = row[0];
+      const rawAmount = row[1];
+
+      const allocationRecord: AllocationRecord = {
+        address: rawAddress,
+        amount: toWeiWithFixed(
+          Number(
+            rawAmount.replace('\r', '').replace(TARGET_NUMBER_DELIMITER, BASIC_NUMBER_DELIMITER),
+          ),
+          decimals,
+        ),
+      };
+
+      allocationRecords.push(allocationRecord);
+    });
     const allocationLength = allocationRecords.length;
 
     const totalAllocatedInFile = bigIntSum(allocationRecords, (allocation) => allocation.amount);
