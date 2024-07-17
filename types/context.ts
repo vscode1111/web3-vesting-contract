@@ -1,5 +1,6 @@
 import { Signer } from 'ethers';
 import { ERC20Token } from '~typechain-types/contracts/ERC20Token';
+import { IDepositRefund } from '~typechain-types/contracts/IDepositRefund';
 import { SQRVesting } from '~typechain-types/contracts/SQRVesting';
 import { SQRVesting__factory } from '~typechain-types/factories/contracts/SQRVesting__factory';
 
@@ -33,6 +34,15 @@ export interface SQRVestingContext {
   user2SQRVesting: SQRVesting;
   user3SQRVesting: SQRVesting;
   owner2SQRVesting: SQRVesting;
+}
+
+export interface DepositRefundContext {
+  depositRefundAddress: string;
+  ownerDepositRefund: IDepositRefund;
+  user1DepositRefund: IDepositRefund;
+  user2DepositRefund: IDepositRefund;
+  user3DepositRefund: IDepositRefund;
+  owner2DepositRefund: IDepositRefund;
 }
 
 export type ContextBase = Users & ERC20TokenContext & SQRVestingContext;

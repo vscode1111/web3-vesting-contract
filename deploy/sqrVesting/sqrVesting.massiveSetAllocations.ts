@@ -7,14 +7,14 @@ import { callWithTimerHre, retry } from '~common-contract';
 import { SQR_VESTING_NAME, TX_OVERRIDES } from '~constants';
 import { contractConfig } from '~seeds';
 import { getAddressesFromHre, getContext, getERC20TokenContext, getUsers } from '~utils';
-import { getExchangeDir } from '../utils';
 import {
   BASIC_NUMBER_DELIMITER,
   CELL_SEPARATOR,
   LINE_SEPARATOR,
   TARGET_NUMBER_DELIMITER,
-} from './constants';
-import { AllocationRecord } from './types';
+} from '../constants';
+import { AllocationRecord } from '../types';
+import { getExchangeDir } from '../utils';
 
 const CHUNK_SIZE = 100;
 

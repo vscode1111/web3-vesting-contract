@@ -6,14 +6,14 @@ import { checkFilePathSync, convertArray2DToContent } from '~common';
 import { callWithTimerHre } from '~common-contract';
 import { SQR_VESTING_NAME } from '~constants';
 import { getAddressesFromHre } from '~utils';
-import { getExchangeDir } from '../utils';
 import {
   BASIC_NUMBER_DELIMITER,
   CELL_SEPARATOR,
   LINE_SEPARATOR,
   TARGET_NUMBER_DELIMITER,
-} from './constants';
-import { AllocationFileRecord } from './types';
+} from '../constants';
+import { AllocationFileRecord } from '../types';
+import { getExchangeDir } from '../utils';
 
 const ALLOCATION_COUNT = 100;
 

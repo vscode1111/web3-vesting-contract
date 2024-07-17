@@ -7,18 +7,15 @@ import { checkFilePathSync, convertArray2DToContent } from '~common';
 import { callWithTimerHre } from '~common-contract';
 import { SQR_VESTING_NAME } from '~constants';
 import { getAddressesFromHre } from '~utils';
-import { getExchangeDir } from '../utils';
 import {
-  BASIC_NUMBER_DELIMITER,
   CELL_SEPARATOR,
+  DEPOSIT_CONTRACT,
   LINE_SEPARATOR,
-  TARGET_NUMBER_DELIMITER,
-} from './constants';
+  VESTING_TOKEN_PRICE,
+} from '../constants';
+import { getExchangeDir, toCsvNumber } from '../utils';
 //@ts-ignore
 import dbClientConfig from './dbClientConfig.json';
-
-const CONTRACT = '0x5C3A3b2816Fa44F04F668bC23861f7874352a39F';
-const VESTING_TOKEN_PRICE = 0.1234;
 
 interface PaymentGatewayDeposit {
   address: string;
@@ -36,7 +33,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
 
     const { rows, rowCount } = await client.query(
       'SELECT account as address, SUM(amount) as amount FROM payment_gateway_transaction_items WHERE contract = $1::text GROUP BY account',
-      [CONTRACT],
+      [DEPOSIT_CONTRACT],
     );
 
     console.log(`Retried ${rowCount} rows from DB`);
@@ -51,10 +48,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     formattedData.push(
       ...paymentGatewayDeposit.map(({ address, amount }) => {
         const finalAmount = amount / VESTING_TOKEN_PRICE;
-        return [
-          address,
-          String(finalAmount).replace(BASIC_NUMBER_DELIMITER, TARGET_NUMBER_DELIMITER),
-        ];
+        return [address, toCsvNumber(finalAmount)];
       }),
     );
 
@@ -65,6 +59,6 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
   }, hre);
 };
 
-func.tags = [`${SQR_VESTING_NAME}:generate-allocations-from-db`];
+func.tags = [`${SQR_VESTING_NAME}:fetch-allocations-from-db`];
 
 export default func;

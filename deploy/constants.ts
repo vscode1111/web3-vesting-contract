@@ -2,3 +2,6 @@ export const LINE_SEPARATOR = '\n';
 export const CELL_SEPARATOR = ';';
 export const BASIC_NUMBER_DELIMITER = '.';
 export const TARGET_NUMBER_DELIMITER = ',';
+
+export const DEPOSIT_CONTRACT = '0xD3E849e143842E047495173B5190C581F005891D';
+export const VESTING_TOKEN_PRICE = 0.1234;

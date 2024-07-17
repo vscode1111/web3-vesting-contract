@@ -2,6 +2,7 @@ import { DeployNetworks } from '~types';
 
 export const SQR_VESTING_NAME = 'SQRVesting';
 export const ERC20_TOKEN_NAME = 'ERC20Token';
+export const DEPOSIT_REFUND_NAME = 'IDepositRefund';
 
 export enum CONTRACT_LIST {
   ERC20_TOKEN = 'ERC20_TOKEN',
