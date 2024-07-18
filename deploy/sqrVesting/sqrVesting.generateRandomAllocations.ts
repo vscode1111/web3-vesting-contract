@@ -7,9 +7,9 @@ import { callWithTimerHre } from '~common-contract';
 import { SQR_VESTING_NAME } from '~constants';
 import { getAddressesFromHre } from '~utils';
 import {
-  BASIC_NUMBER_DELIMITER,
   CELL_SEPARATOR,
   LINE_SEPARATOR,
+  SOURCE_NUMBER_DELIMITER,
   TARGET_NUMBER_DELIMITER,
 } from '../constants';
 import { AllocationFileRecord } from '../types';
@@ -39,7 +39,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     formattedData.push(
       ...allocationFileRecords.map(({ address, amount }) => [
         address,
-        String(amount).replace(BASIC_NUMBER_DELIMITER, TARGET_NUMBER_DELIMITER),
+        String(amount).replace(SOURCE_NUMBER_DELIMITER, TARGET_NUMBER_DELIMITER),
       ]),
     );
 

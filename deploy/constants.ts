@@ -1,6 +1,6 @@
 export const LINE_SEPARATOR = '\n';
 export const CELL_SEPARATOR = ';';
-export const BASIC_NUMBER_DELIMITER = '.';
+export const SOURCE_NUMBER_DELIMITER = '.';
 export const TARGET_NUMBER_DELIMITER = ',';
 
 export const DEPOSIT_CONTRACT_ADDRESS = '0x9173f867D118257A54A28662884c4C6693F8be85';

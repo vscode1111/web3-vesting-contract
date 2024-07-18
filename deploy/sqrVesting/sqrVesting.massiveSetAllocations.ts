@@ -8,10 +8,10 @@ import { SQR_VESTING_NAME, TX_OVERRIDES } from '~constants';
 import { contractConfig } from '~seeds';
 import { getAddressesFromHre, getContext, getERC20TokenContext, getUsers } from '~utils';
 import {
-  BASIC_NUMBER_DELIMITER,
   CELL_SEPARATOR,
   DEPOSIT_CONTRACT_ADDRESS,
   LINE_SEPARATOR,
+  SOURCE_NUMBER_DELIMITER,
   TARGET_NUMBER_DELIMITER,
 } from '../constants';
 import { AllocationRecord } from '../types';
@@ -52,7 +52,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
         address: rawAddress,
         amount: toWeiWithFixed(
           Number(
-            rawAmount.replace('\r', '').replace(TARGET_NUMBER_DELIMITER, BASIC_NUMBER_DELIMITER),
+            rawAmount.replace('\r', '').replace(TARGET_NUMBER_DELIMITER, SOURCE_NUMBER_DELIMITER),
           ),
           decimals,
         ),
