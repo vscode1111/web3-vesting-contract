@@ -26,6 +26,11 @@ interface IDepositRefund {
   }
 
   /**
+   * @dev Returns the goal amount.
+   */
+  function getBaseGoal() external view returns (uint256);
+
+  /**
    * @dev Returns the start date.
    */
   function getStartDate() external view returns (uint32);
@@ -56,7 +61,12 @@ interface IDepositRefund {
   function getDepositRefundTokensInfo() external view returns (DepositRefundTokensInfo memory);
 
   /**
-   * @dev Returns the account's deposited amount.
+   * @dev Returns the account's allocation amount.
+   */
+  function getDepositRefundAllocation(address account) external view returns (uint256);
+
+  /**
+   * @dev Returns the account's deposit/refund info.
    */
   function getDepositRefundAccountInfo(
     address account

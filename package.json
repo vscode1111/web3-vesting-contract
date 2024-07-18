@@ -16,7 +16,7 @@
     "deploy:fetch": "hardhat deploy --tags SQRVesting:fetch",
     "deploy:send-tokens": "hardhat deploy --tags SQRVesting:send-tokens",
     "deploy:set-allocations": "hardhat deploy --tags SQRVesting:set-allocations",
-    "deploy:fetch-deposit-refund-info": "hardhat deploy --tags IDepositRefund:fetch-deposit-refund-info",
+    "deploy:fetch-funds": "hardhat deploy --tags IDepositRefund:fetch-funds",
     "deploy:fetch-allocations-from-db": "hardhat deploy --tags SQRVesting:fetch-allocations-from-db",
     "deploy:massive-set-allocations": "hardhat deploy --tags SQRVesting:massive-set-allocations",
     "deploy:generate-random-allocations": "hardhat deploy --tags SQRVesting:generate-random-allocations",

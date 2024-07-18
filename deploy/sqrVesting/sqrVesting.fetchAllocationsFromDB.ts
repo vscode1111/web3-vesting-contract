@@ -9,7 +9,7 @@ import { SQR_VESTING_NAME } from '~constants';
 import { getAddressesFromHre } from '~utils';
 import {
   CELL_SEPARATOR,
-  DEPOSIT_CONTRACT,
+  DEPOSIT_CONTRACT_ADDRESS,
   LINE_SEPARATOR,
   VESTING_TOKEN_PRICE,
 } from '../constants';
@@ -33,7 +33,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
 
     const { rows, rowCount } = await client.query(
       'SELECT account as address, SUM(amount) as amount FROM payment_gateway_transaction_items WHERE contract = $1::text GROUP BY account',
-      [DEPOSIT_CONTRACT],
+      [DEPOSIT_CONTRACT_ADDRESS],
     );
 
     console.log(`Retried ${rowCount} rows from DB`);

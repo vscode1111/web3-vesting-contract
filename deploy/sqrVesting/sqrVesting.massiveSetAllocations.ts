@@ -10,11 +10,12 @@ import { getAddressesFromHre, getContext, getERC20TokenContext, getUsers } from 
 import {
   BASIC_NUMBER_DELIMITER,
   CELL_SEPARATOR,
+  DEPOSIT_CONTRACT_ADDRESS,
   LINE_SEPARATOR,
   TARGET_NUMBER_DELIMITER,
 } from '../constants';
 import { AllocationRecord } from '../types';
-import { getExchangeDir } from '../utils';
+import { getExchangeDir, getFundsFileName } from '../utils';
 
 const CHUNK_SIZE = 100;
 
@@ -31,7 +32,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     const decimals = Number(await owner2ERC20Token.decimals());
 
     const exchangeDir = getExchangeDir();
-    const sourcePath = `${exchangeDir}/allocations.csv`;
+    const sourcePath = getFundsFileName(exchangeDir, DEPOSIT_CONTRACT_ADDRESS);
     const content = readFileSync(sourcePath, { encoding: 'utf8', flag: 'r' });
 
     const rawRecords = convertContentToArray2D(content, LINE_SEPARATOR, CELL_SEPARATOR);
@@ -45,7 +46,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
       }
 
       const rawAddress = row[0];
-      const rawAmount = row[1];
+      const rawAmount = row[7];
 
       const allocationRecord: AllocationRecord = {
         address: rawAddress,
@@ -72,8 +73,8 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
       let existCount = 0;
       const allocationChunk = allocationChunks[i];
       const addresses = allocationChunk.map((allocation) => allocation.address);
-      const chunkIndex = i + 1;
-      const prefix = `${chunkIndex * CHUNK_SIZE}/${allocationLength}`;
+      const chunkPrefix = Math.min(allocationLength, (i + 1) * CHUNK_SIZE);
+      const prefix = `${chunkPrefix}/${allocationLength}`;
       try {
         const claimInfoRecords: Record<string, bigint> = {};
 
@@ -113,12 +114,12 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
           `${prefix} proceed: exists: ${existCount}, new allocations: ${txAllocationRecordsLength}`,
         );
       } catch (err: any) {
-        console.log(`error for ${chunkIndex} chunk, ${err?.message}`);
+        console.log(`error for ${chunkPrefix} chunk, ${err?.message}`);
       }
     }
 
     console.log(
-      `Total allocations exist: ${totalExistCount}/${allocationLength}, new allocation: ${totalNewAllocationCount}`,
+      `Total allocations exist: ${totalExistCount}/${allocationLength}, new allocations: ${totalNewAllocationCount}`,
     );
 
     const totalAllocatedInContract = await owner2SQRVesting.getTotalAllocated();

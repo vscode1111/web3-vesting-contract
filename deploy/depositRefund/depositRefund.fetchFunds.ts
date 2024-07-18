@@ -7,20 +7,28 @@ import { DEPOSIT_REFUND_NAME } from '~constants';
 import { getDepositRefundContext, getUsers } from '~utils';
 import {
   CELL_SEPARATOR,
-  DEPOSIT_CONTRACT,
+  DEPOSIT_CONTRACT_ADDRESS,
   LINE_SEPARATOR,
   VESTING_TOKEN_PRICE,
 } from '../constants';
 import { DepositRefundRecord } from '../types';
-import { getExchangeDir, toCsvNumber } from '../utils';
+import { getExchangeDir, getFundsFileName, toCsvNumber } from '../utils';
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<void> => {
   await callWithTimerHre(async () => {
-    console.log(`${DEPOSIT_REFUND_NAME} ${DEPOSIT_CONTRACT} is fetching deposit/refund data ...`);
+    console.log(
+      `${DEPOSIT_REFUND_NAME} is fetching funds data from ${DEPOSIT_CONTRACT_ADDRESS} ...`,
+    );
+    const { owner2DepositRefund } = await getDepositRefundContext(
+      await getUsers(),
+      DEPOSIT_CONTRACT_ADDRESS,
+    );
 
-    const users = await getUsers();
-
-    const { owner2DepositRefund } = await getDepositRefundContext(users, DEPOSIT_CONTRACT);
+    const isFetchReady = await owner2DepositRefund.getDepositRefundFetchReady();
+    if (!isFetchReady) {
+      console.error(`Contract isn't ready for fetching data`);
+      return;
+    }
 
     let [rawAccountCount, { baseDecimals, boostDecimals }] = await Promise.all([
       owner2DepositRefund.getAccountCount(),
@@ -57,11 +65,11 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
         'Address',
         'Base deposited',
         'Boosted',
-        'Base Allocation',
+        'Base allocation',
         'Base refund',
         'Boost refund',
         'Nonce',
-        'Vesting amount',
+        'Vesting allocation',
       ],
     ];
 
@@ -83,12 +91,12 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     );
 
     writeFileSync(
-      `${exchangeDir}/deposit-refund-${DEPOSIT_CONTRACT}.csv`,
+      getFundsFileName(exchangeDir, DEPOSIT_CONTRACT_ADDRESS),
       convertArray2DToContent(formattedData, LINE_SEPARATOR, CELL_SEPARATOR),
     );
   }, hre);
 };
 
-func.tags = [`${DEPOSIT_REFUND_NAME}:fetch-deposit-refund-info`];
+func.tags = [`${DEPOSIT_REFUND_NAME}:fetch-funds`];
 
 export default func;

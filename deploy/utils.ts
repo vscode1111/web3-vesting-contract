@@ -8,3 +8,7 @@ export function getExchangeDir() {
 export function toCsvNumber(value: number) {
   return String(value).replace(BASIC_NUMBER_DELIMITER, TARGET_NUMBER_DELIMITER);
 }
+
+export function getFundsFileName(exchangeDir: string, contractAddress: string) {
+  return `${exchangeDir}/funds-${contractAddress}.csv`;
+}
