@@ -18,7 +18,6 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     const { sqrVestingAddress } = getAddressesFromHre(hre);
     console.log(`${SQR_VESTING_NAME} ${sqrVestingAddress} is fetching...`);
     const users = await getUsers();
-
     const { owner2SQRVesting } = await getSQRVestingContext(users, sqrVestingAddress);
     const erc20Token = await owner2SQRVesting.erc20Token();
     const { ownerERC20Token } = await getERC20TokenContext(users, erc20Token);

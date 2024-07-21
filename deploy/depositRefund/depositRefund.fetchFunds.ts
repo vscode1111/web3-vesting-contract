@@ -1,10 +1,17 @@
+import { ZeroAddress } from 'ethers';
 import { writeFileSync } from 'fs';
 import { DeployFunction } from 'hardhat-deploy/types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { checkFilePathSync, convertArray2DToContent, toNumberDecimals } from '~common';
+import {
+  DEFAULT_DECIMALS,
+  checkFilePathSync,
+  convertArray2DToContent,
+  toNumberDecimals,
+} from '~common';
 import { callWithTimerHre, runConcurrently } from '~common-contract';
 import { DEPOSIT_REFUND_NAME } from '~constants';
-import { getDepositRefundContext, getUsers } from '~utils';
+import { ERC20Token } from '~typechain-types/contracts/ERC20Token';
+import { getDepositRefundContext, getERC20TokenContext, getUsers } from '~utils';
 import {
   CELL_SEPARATOR,
   DEPOSIT_CONTRACT_ADDRESS,
@@ -19,10 +26,8 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     console.log(
       `${DEPOSIT_REFUND_NAME} is fetching funds data from ${DEPOSIT_CONTRACT_ADDRESS} ...`,
     );
-    const { owner2DepositRefund } = await getDepositRefundContext(
-      await getUsers(),
-      DEPOSIT_CONTRACT_ADDRESS,
-    );
+    const users = await getUsers();
+    const { owner2DepositRefund } = await getDepositRefundContext(users, DEPOSIT_CONTRACT_ADDRESS);
 
     const isFetchReady = await owner2DepositRefund.getDepositRefundFetchReady();
     if (!isFetchReady) {
@@ -30,12 +35,28 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
       return;
     }
 
-    let [rawAccountCount, { baseDecimals, boostDecimals }] = await Promise.all([
-      owner2DepositRefund.getAccountCount(),
-      owner2DepositRefund.getDepositRefundTokensInfo(),
-    ]);
+    const { baseToken, boostToken } = await owner2DepositRefund.getDepositRefundTokensInfo();
+
+    let baseTokenContext: ERC20Token | null = null;
+    if (baseToken !== ZeroAddress) {
+      baseTokenContext = (await getERC20TokenContext(users, baseToken)).owner2ERC20Token;
+    }
+
+    let boostTokenContext: ERC20Token | null = null;
+    if (boostToken !== ZeroAddress) {
+      boostTokenContext = (await getERC20TokenContext(users, boostToken)).owner2ERC20Token;
+    }
+
+    let [rawAccountCount, rawBaseDecimals = DEFAULT_DECIMALS, rawBoostDecimals = DEFAULT_DECIMALS] =
+      await Promise.all([
+        owner2DepositRefund.getAccountCount(),
+        baseTokenContext?.decimals(),
+        boostTokenContext?.decimals(),
+      ]);
 
     const accountCount = Number(rawAccountCount);
+    const baseDecimals = Number(rawBaseDecimals);
+    const boostDecimals = Number(rawBoostDecimals);
 
     console.log(`Account count: ${accountCount}`);
 
