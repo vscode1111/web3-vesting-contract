@@ -6,6 +6,7 @@ import type { HardhatUserConfig } from 'hardhat/config';
 import type { HardhatNetworkAccountUserConfig, NetworkUserConfig } from 'hardhat/types';
 import { resolve } from 'path';
 import 'tsconfig-paths/register';
+import { toBoolean } from '~common';
 import { DeployNetworks } from '~types';
 import { getEnv } from './common/config';
 
@@ -14,8 +15,8 @@ dotenvConfig({
   path: resolve(__dirname, dotenvConfigPath),
 });
 
-const isCoverage = process.env.COVERAGE;
-const gasReporter = false;
+const isCoverage = toBoolean(process.env.COVERAGE);
+const gasReporterEnable = false;
 
 function getAccounts() {
   return [
@@ -55,7 +56,7 @@ const config: HardhatUserConfig = {
     },
   },
   gasReporter: {
-    enabled: gasReporter,
+    enabled: gasReporterEnable,
     currency: 'USD',
     excludeContracts: [],
   },
