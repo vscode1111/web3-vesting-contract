@@ -2,11 +2,13 @@ import { ZeroAddress } from 'ethers';
 import { writeFileSync } from 'fs';
 import { DeployFunction } from 'hardhat-deploy/types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { sumBy } from 'lodash';
 import {
   DEFAULT_DECIMALS,
   checkFilePathSync,
   convertArray2DToContent,
   toNumberDecimals,
+  toNumberDecimalsFixed,
 } from '~common';
 import { callWithTimerHre, printDate, runConcurrently } from '~common-contract';
 import { DEPOSIT_REFUND_NAME } from '~constants';
@@ -49,12 +51,17 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
       boostTokenContext = (await getERC20TokenContext(users, boostToken)).owner2ERC20Token;
     }
 
-    let [rawAccountCount, rawBaseDecimals = DEFAULT_DECIMALS, rawBoostDecimals = DEFAULT_DECIMALS] =
-      await Promise.all([
-        owner2DepositRefund.getAccountCount(),
-        baseTokenContext?.decimals(),
-        boostTokenContext?.decimals(),
-      ]);
+    let [
+      rawAccountCount,
+      rawBaseDecimals = DEFAULT_DECIMALS,
+      rawBoostDecimals = DEFAULT_DECIMALS,
+      { totalBaseDeposited },
+    ] = await Promise.all([
+      owner2DepositRefund.getAccountCount(),
+      baseTokenContext?.decimals(),
+      boostTokenContext?.decimals(),
+      owner2DepositRefund.getDepositRefundContractInfo(),
+    ]);
 
     const accountCount = Number(rawAccountCount);
     const baseDecimals = Number(rawBaseDecimals);
@@ -79,6 +86,14 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
         nonce: Number(nonce),
       };
     }, accountCount);
+
+    const totalAllocatedInFile = sumBy(
+      depositRefundRecords,
+      (allocation) => allocation.baseDeposited,
+    );
+
+    const totalAllocatedInContract = toNumberDecimalsFixed(totalBaseDeposited, baseDecimals);
+    const diffTotalAllocated = totalAllocatedInFile - totalAllocatedInContract;
 
     const exchangeDir = getExchangeDir();
     checkFilePathSync(exchangeDir);
@@ -116,6 +131,10 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     writeFileSync(
       getFundsFileName(exchangeDir, DEPOSIT_CONTRACT_ADDRESS),
       convertArray2DToContent(formattedData, LINE_SEPARATOR, CELL_SEPARATOR),
+    );
+
+    console.log(
+      `Total base deposited in file: ${totalAllocatedInFile}, total base deposited in contract: ${totalAllocatedInContract}, diff: ${diffTotalAllocated}`,
     );
   }, hre);
 };
