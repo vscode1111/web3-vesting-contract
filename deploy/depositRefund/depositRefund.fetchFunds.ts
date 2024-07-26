@@ -18,6 +18,7 @@ import {
   BYPASS_CONTRACT_CHECK,
   CELL_SEPARATOR,
   DEPOSIT_CONTRACT_ADDRESS,
+  DEPOSIT_FIELD_FOR_VESTING_ALLOCATION,
   LINE_SEPARATOR,
   VESTING_TOKEN_PRICE,
 } from '../constants';
@@ -112,20 +113,24 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     ];
 
     formattedData.push(
-      ...depositRefundRecords.map(
-        ({ address, baseDeposited, boosted, baseAllocation, baseRefund, boostRefund, nonce }) => {
-          return [
-            address,
-            toCsvNumber(baseDeposited),
-            boosted ? 'true' : 'false',
-            toCsvNumber(baseAllocation),
-            toCsvNumber(baseRefund),
-            toCsvNumber(boostRefund),
-            toCsvNumber(nonce),
-            toCsvNumber(baseAllocation / VESTING_TOKEN_PRICE),
-          ];
-        },
-      ),
+      ...depositRefundRecords.map((depositRefundRecord) => {
+        const { address, baseDeposited, boosted, baseAllocation, baseRefund, boostRefund, nonce } =
+          depositRefundRecord;
+
+        return [
+          address,
+          toCsvNumber(baseDeposited),
+          boosted ? 'true' : 'false',
+          toCsvNumber(baseAllocation),
+          toCsvNumber(baseRefund),
+          toCsvNumber(boostRefund),
+          toCsvNumber(nonce),
+          toCsvNumber(
+            (depositRefundRecord[DEPOSIT_FIELD_FOR_VESTING_ALLOCATION] as number) /
+              VESTING_TOKEN_PRICE,
+          ),
+        ];
+      }),
     );
 
     writeFileSync(

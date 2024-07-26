@@ -11,7 +11,7 @@ import {
   printClaimInfo,
 } from '~utils';
 
-// const _userAddress = '0xdcC3D384a79aD184Ac949e777B7c587877DeF0af';
+const _userAddress = '0x2C5459BB28254cc96944c50090f4Bd0eF045A937';
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<void> => {
   await callWithTimerHre(async () => {
@@ -24,9 +24,9 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     const decimals = Number(await ownerERC20Token.decimals());
     const tokenName = await ownerERC20Token.name();
 
-    const { user1Address } = users;
-    const userAddress = user1Address;
-    // const userAddress = _userAddress;
+    // const { user1Address } = users;
+    // const userAddress = user1Address;
+    const userAddress = _userAddress;
 
     const result = {
       owner: await owner2SQRVesting.owner(),

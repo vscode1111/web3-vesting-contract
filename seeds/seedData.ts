@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { DAYS, MINUTES, toUnixTime, toWei } from '~common';
+import { DAYS, MINUTES, toUnixTime, toUnixTimeUtc, toWei } from '~common';
 import { TokenAddressDescription } from '~common-contract';
 import { Token, ZERO } from '~constants';
 import { DeployNetworkKey } from '~types';
@@ -10,7 +10,7 @@ import { ContractConfig, DeployContractArgs, DeployTokenArgs, TokenConfig } from
 
 type DeployType = 'test' | 'main' | 'stage' | 'prod';
 
-const deployType: DeployType = (process.env.ENV as DeployType) ?? 'main';
+const deployType: DeployType = (process.env.ENV as DeployType) ?? 'prod';
 
 console.log('ENV', deployType);
 
@@ -23,9 +23,9 @@ export const chainTokenDescription: Record<DeployNetworkKey, TokenAddressDescrip
 export const { address: tokenAddress, decimals: tokenDecimals } =
   chainTokenDescription[defaultNetwork];
 
-if (isProd) {
-  throw 'Are you sure? It is PROD!';
-}
+// if (isProd) {
+//   throw 'Are you sure? It is PROD!';
+// }
 
 const priceDiv = BigInt(1);
 export const now = dayjs();
@@ -49,10 +49,25 @@ export const contractConfigDeployMap: Record<DeployType, Partial<ContractConfig>
     unlockPeriod: 1 * MINUTES,
     unlockPeriodPercent: calculatePercentForContract(0.001),
   },
-  stage: {},
-  prod: {
-    newOwner: '0xA8B8455ad9a1FAb1d4a3B69eD30A52fBA82549Bb', //Matan
+  stage: {
+    newOwner: '0x627Ab3fbC3979158f451347aeA288B0A3A47E1EF',
     erc20Token: '0x2B72867c32CF673F7b02d208B26889fEd353B1f8', //SQR
+    startDate: toUnixTime(now.add(2, 'minutes').toDate()),
+    cliffPeriod: 0,
+    firstUnlockPercent: calculatePercentForContract(25),
+    unlockPeriod: 1 * MINUTES,
+    unlockPeriodPercent: calculatePercentForContract(25),
+  },
+  prod: {
+    // newOwner: '0xA8B8455ad9a1FAb1d4a3B69eD30A52fBA82549Bb', //Matan
+    newOwner: '0x627Ab3fbC3979158f451347aeA288B0A3A47E1EF',
+    erc20Token: '0x2B72867c32CF673F7b02d208B26889fEd353B1f8', //SQR
+    // startDate: toUnixTime(now.add(5, 'minutes').toDate()),
+    startDate: toUnixTimeUtc(new Date(2024, 6, 26, 13, 30, 0)),
+    cliffPeriod: 0,
+    firstUnlockPercent: calculatePercentForContract(25),
+    unlockPeriod: 30 * DAYS,
+    unlockPeriodPercent: calculatePercentForContract(25),
   },
 };
 
