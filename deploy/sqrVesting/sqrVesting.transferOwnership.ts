@@ -3,16 +3,18 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { callWithTimerHre, waitTx } from '~common-contract';
 import { SQR_VESTING_NAME } from '~constants';
 import { contractConfig } from '~seeds';
-import { getAddressesFromHre, getContext, getUsers } from '~utils';
+import { getAddressesFromHre, getContext } from '~utils';
 import { deployParams } from './deployData';
+
+const ownerAddress = '0xA8B8455ad9a1FAb1d4a3B69eD30A52fBA82549Bb';
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<void> => {
   await callWithTimerHre(async () => {
     const { sqrVestingAddress } = getAddressesFromHre(hre);
     console.log(`${SQR_VESTING_NAME} ${sqrVestingAddress} is transferring ownership...`);
 
-    const users = await getUsers();
-    const { ownerAddress } = users;
+    // const users = await getUsers();
+    // const { ownerAddress } = users;
 
     const erc20TokenAddress = contractConfig.erc20Token;
     const context = await getContext(erc20TokenAddress, sqrVestingAddress);

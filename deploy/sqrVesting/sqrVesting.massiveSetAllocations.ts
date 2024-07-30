@@ -33,6 +33,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
 
     const exchangeDir = getExchangeDir();
     const sourcePath = getFundsFileName(exchangeDir, DEPOSIT_CONTRACT_ADDRESS);
+    console.log(`Source file: ${sourcePath}`);
     const content = readFileSync(sourcePath, { encoding: 'utf8', flag: 'r' });
 
     const rawRecords = convertContentToArray2D(content, LINE_SEPARATOR, CELL_SEPARATOR);
