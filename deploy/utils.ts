@@ -12,3 +12,11 @@ export function toCsvNumber(value: number) {
 export function getFundsFileName(exchangeDir: string, contractAddress: string) {
   return `${exchangeDir}/funds-${contractAddress}.csv`;
 }
+
+export function getProRataFileName(exchangeDir: string, contractAddress: string) {
+  return `${exchangeDir}/pro-rata-${contractAddress}.csv`;
+}
+
+export function getTxUrl(tx: string) {
+  return `https://bscscan.com/tx/${tx}`;
+}

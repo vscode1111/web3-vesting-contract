@@ -101,13 +101,13 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
 
     let formattedData: string[][] = [
       [
-        'Address',
+        'Wallet',
         'Base deposited',
         'Boosted',
         'Base allocation',
         'Base refund',
         'Boost refund',
-        'Nonce',
+        'Number of deposits',
         'Vesting allocation',
       ],
     ];
