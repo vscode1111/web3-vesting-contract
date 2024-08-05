@@ -5,6 +5,7 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { sumBy } from 'lodash';
 import {
   DEFAULT_DECIMALS,
+  booleanToStringNumber,
   checkFilePathSync,
   convertArray2DToContent,
   toNumberDecimals,
@@ -103,7 +104,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
       [
         'Wallet',
         'Base deposited',
-        'Boosted',
+        'Boosted (0/1)',
         'Base allocation',
         'Base refund',
         'Boost refund',
@@ -120,7 +121,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
         return [
           address,
           toCsvNumber(baseDeposited),
-          boosted ? 'true' : 'false',
+          booleanToStringNumber(boosted),
           toCsvNumber(baseAllocation),
           toCsvNumber(baseRefund),
           toCsvNumber(boostRefund),

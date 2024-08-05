@@ -2,7 +2,12 @@ import { writeFileSync } from 'fs';
 import { DeployFunction } from 'hardhat-deploy/types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { Client } from 'pg';
-import { checkFilePathSync, convertArray2DToContent, formatDate } from '~common';
+import {
+  booleanToStringNumber,
+  checkFilePathSync,
+  convertArray2DToContent,
+  formatDate,
+} from '~common';
 import { callWithTimerHre } from '~common-contract';
 import { SQR_VESTING_NAME } from '~constants';
 import { getAddressesFromHre } from '~utils';
@@ -51,7 +56,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
       [
         'Wallet',
         'baseAmount',
-        'isBoost',
+        'isBoost (0/1)',
         'boostExchangeRate',
         'boostAmount',
         'timestamp',
@@ -73,7 +78,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
           return [
             account,
             toCsvNumber(baseAmount),
-            String(isBoost),
+            booleanToStringNumber(isBoost),
             toCsvNumber(boostExchangeRate),
             toCsvNumber(boostAmount),
             formatDate(timestamp),
