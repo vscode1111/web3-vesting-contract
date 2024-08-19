@@ -10,19 +10,19 @@ import { ContractConfig, DeployContractArgs, DeployTokenArgs, TokenConfig } from
 
 type DeployType = 'test' | 'main' | 'stage' | 'prod';
 
-const deployType: DeployType = (process.env.ENV as DeployType) ?? 'prod';
+const deployType: DeployType = (process.env.ENV as DeployType) ?? 'main';
 
 console.log('ENV', deployType);
 
-const isProd = deployType === ('prod' as any);
-
 export const chainTokenDescription: Record<DeployNetworkKey, TokenAddressDescription> = {
+  mainnet: getTokenDescription(Token.tSQR),
   bsc: getTokenDescription(Token.tSQR),
 };
 
 export const { address: tokenAddress, decimals: tokenDecimals } =
   chainTokenDescription[defaultNetwork];
 
+// const isProd = deployType === ('prod' as any);
 // if (isProd) {
 //   throw 'Are you sure? It is PROD!';
 // }
@@ -41,7 +41,9 @@ export const contractConfigDeployMap: Record<DeployType, Partial<ContractConfig>
   },
   main: {
     newOwner: '0x627Ab3fbC3979158f451347aeA288B0A3A47E1EF',
-    startDate: toUnixTime(now.add(2_000_000, 'minutes').toDate()),
+    // startDate: toUnixTime(now.add(10, 'minutes').toDate()),
+    startDate: 1724081639,
+    erc20Token: '0xa7D4078926d6fB63d843F17811893E29Cdb2fecA', //Temp01 - mainnet
     // startDate: 1718299329,
     cliffPeriod: 0,
     firstUnlockPercent: calculatePercentForContract(50),

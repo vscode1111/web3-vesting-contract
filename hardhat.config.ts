@@ -46,13 +46,15 @@ function getChainConfig(
   };
 }
 
-export const defaultNetwork: keyof DeployNetworks = 'bsc';
+// export const defaultNetwork: keyof DeployNetworks = 'bsc';
+export const defaultNetwork: keyof DeployNetworks = 'mainnet';
 
 const config: HardhatUserConfig = {
   defaultNetwork: isCoverage ? 'hardhat' : defaultNetwork,
   etherscan: {
     apiKey: {
-      bsc: getEnv('BSC_SCAN_API_KEY'),
+      mainnet: getEnv(`MAINNET_SCAN_API_KEY`),
+      bsc: getEnv(`BSC_SCAN_API_KEY`),
     },
   },
   gasReporter: {
@@ -74,6 +76,7 @@ const config: HardhatUserConfig = {
       gasPrice: 1,
       accounts: getNetworkAccounts(),
     },
+    mainnet: getChainConfig('mainnet'),
     bsc: getChainConfig('bsc'),
   },
   paths: {

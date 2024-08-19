@@ -11,9 +11,12 @@ export enum CONTRACT_LIST {
 
 export const CONTRACTS: Record<CONTRACT_LIST, DeployNetworks> = {
   ERC20_TOKEN: {
+    mainnet: '0xa7D4078926d6fB63d843F17811893E29Cdb2fecA', //tSQR2
     bsc: '0x8364a68c32E581332b962D88CdC8dBe8b3e0EE9c', //tSQR2
   },
   SQR_VESTING: {
+    // mainnet: '0x3f1Ba41D0b48CdAfAABC5D87075aCbC6dCFe62A4', //Test
+    mainnet: '0xb56929cd81D1bb2c33693e8078C88c90e32774a2', //Test
     // bsc: '0xc9b15Fe39ED32F8338b59C8A6ed885ACF5dC6b1f', //Test
     // bsc: '0xee539859d7Eea7034835cd12af9EAc6347F37b56', //Test
     // bsc: '0xB084a0De743043985603A7EE5565Bbd99446113d', //Test

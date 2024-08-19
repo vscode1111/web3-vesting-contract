@@ -1,4 +1,5 @@
 export interface DeployNetworks {
+  mainnet: string;
   bsc: string;
 }
 

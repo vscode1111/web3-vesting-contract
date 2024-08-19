@@ -16,7 +16,7 @@ const recipientsExt: string[] = [
   '0x60E85E3a7a9BaB7ff19268802792840C8d2a8286', //Nadezhda
 ];
 
-const EXTERNAL = true;
+const EXTERNAL = false;
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<void> => {
   await callWithTimerHre(async () => {
