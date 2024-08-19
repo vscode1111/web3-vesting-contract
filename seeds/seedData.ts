@@ -63,7 +63,7 @@ export const contractConfigDeployMap: Record<DeployType, Partial<ContractConfig>
     newOwner: '0x627Ab3fbC3979158f451347aeA288B0A3A47E1EF',
     erc20Token: '0x2B72867c32CF673F7b02d208B26889fEd353B1f8', //SQR
     // startDate: toUnixTime(now.add(5, 'minutes').toDate()),
-    startDate: toUnixTimeUtc(new Date(2024, 6, 26, 14, 0, 0)),
+    startDate: toUnixTimeUtc(new Date(2024, 7, 26, 14, 0, 0)),
     cliffPeriod: 0,
     firstUnlockPercent: calculatePercentForContract(25),
     unlockPeriod: 30 * DAYS,
