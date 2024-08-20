@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { VERSION } from '~constants';
+import { CONTRACT_NAME, CONTRACT_VERSION } from '~constants';
 import { contractConfig } from '~seeds';
 import { calculatePercentForContract } from '~utils';
 import { calculateClaimAt, loadSQRVestingFixture } from './utils';
@@ -12,7 +12,8 @@ export function shouldBehaveCorrectFetching(): void {
 
     it('should be correct init variables', async function () {
       expect(await this.ownerSQRVesting.owner()).eq(this.owner2Address);
-      expect(await this.ownerSQRVesting.VERSION()).eq(VERSION);
+      expect(await this.ownerSQRVesting.getContractName()).eq(CONTRACT_NAME);
+      expect(await this.ownerSQRVesting.getContractVersion()).eq(CONTRACT_VERSION);
       expect(await this.ownerSQRVesting.startDate()).eq(contractConfig.startDate);
       expect(await this.ownerSQRVesting.cliffPeriod()).eq(contractConfig.cliffPeriod);
       expect(await this.ownerSQRVesting.firstUnlockPercent()).eq(contractConfig.firstUnlockPercent);

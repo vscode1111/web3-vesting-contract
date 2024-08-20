@@ -11,7 +11,7 @@ import {
   printClaimInfo,
 } from '~utils';
 
-const _userAddress = '0x2C5459BB28254cc96944c50090f4Bd0eF045A937';
+// const _userAddress = '0x2C5459BB28254cc96944c50090f4Bd0eF045A937';
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<void> => {
   await callWithTimerHre(async () => {

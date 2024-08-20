@@ -5,13 +5,14 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {IContractInfo} from "./IContractInfo.sol";
 
-contract SQRVesting is Ownable, ReentrancyGuard {
+contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo {
   using SafeERC20 for IERC20;
 
   //Variables, structs, errors, modifiers, events------------------------
 
-  string public constant VERSION = "1.1";
+  string public constant VERSION = "1.2";
 
   IERC20 public erc20Token;
   uint32 public startDate;
@@ -70,6 +71,7 @@ contract SQRVesting is Ownable, ReentrancyGuard {
     uint256 claimed;
     uint32 claimedAt;
     bool exist;
+    bool refunded;
   }
 
   struct ClaimInfo {
@@ -77,16 +79,20 @@ contract SQRVesting is Ownable, ReentrancyGuard {
     uint256 claimed;
     uint32 claimedAt;
     bool exist;
+    bool refunded;
     bool canClaim;
     uint256 available;
     uint256 remain;
     uint256 nextAvailable;
     uint32 nextClaimAt;
+    bool canRefund;
   }
 
   event Claim(address indexed account, uint256 amount);
+  event Refund(address indexed account);
   event SetAllocation(address indexed account, uint256 amount);
   event WithdrawExcessAmount(address indexed to, uint256 amount);
+  event ForceWithdraw(address indexed token, address indexed to, uint256 amount);
 
   error ERC20TokenNotZeroAddress();
   error FirstUnlockPercentMustBeLessThanPercentDivider();
@@ -98,9 +104,20 @@ contract SQRVesting is Ownable, ReentrancyGuard {
   error ContractMustHaveSufficientFunds();
   error NothingToClaim();
   error CantChangeOngoingVesting();
+  error AlreadyRefunded();
+  error AlreadyClaimed();
 
   //Read methods-------------------------------------------
+  //IContractInfo implementation
+  function getContractName() external pure returns (string memory) {
+    return "Vesting";
+  }
 
+  function getContractVersion() external pure returns (string memory) {
+    return VERSION;
+  }
+
+  //Custom
   function getBalance() public view returns (uint256) {
     return erc20Token.balanceOf(address(this));
   }
@@ -185,8 +202,12 @@ contract SQRVesting is Ownable, ReentrancyGuard {
     }
   }
 
-  function calculateRemainAmount(address wallet) public view returns (uint256) {
-    return allocations[wallet].amount - allocations[wallet].claimed;
+  function calculateRemainAmount(address account) public view returns (uint256) {
+    return allocations[account].amount - allocations[account].claimed;
+  }
+
+  function canRefund(address account) public view returns (bool) {
+    return allocations[account].claimed == 0 && !allocations[account].refunded;
   }
 
   function fetchClaimInfo(address account) external view returns (ClaimInfo memory) {
@@ -196,6 +217,7 @@ contract SQRVesting is Ownable, ReentrancyGuard {
     uint256 remain = calculateRemainAmount(account);
     uint256 nextAvailable = calculateClaimAmount(account, 1);
     uint32 nextClaimAt = calculateClaimAt(account, 1);
+    bool canRefund_ = canRefund(account);
 
     return
       ClaimInfo(
@@ -203,11 +225,13 @@ contract SQRVesting is Ownable, ReentrancyGuard {
         allocation.claimed,
         allocation.claimedAt,
         allocation.exist,
+        allocation.refunded,
         canClaim_,
         available,
         remain,
         nextAvailable,
-        nextClaimAt
+        nextClaimAt,
+        canRefund_
       );
   }
 
@@ -289,8 +313,10 @@ contract SQRVesting is Ownable, ReentrancyGuard {
       revert ContractMustHaveSufficientFunds();
     }
 
-    allocations[sender].claimed += claimAmount;
-    allocations[sender].claimedAt = (uint32)(block.timestamp);
+    Allocation storage allocation = allocations[sender];
+
+    allocation.claimed += claimAmount;
+    allocation.claimedAt = (uint32)(block.timestamp);
 
     totalReserved -= claimAmount;
 
@@ -299,10 +325,35 @@ contract SQRVesting is Ownable, ReentrancyGuard {
     emit Claim(sender, claimAmount);
   }
 
+  function refund() external nonReentrant {
+    address sender = _msgSender();
+    Allocation storage allocation = allocations[sender];
+
+    if (allocation.refunded) {
+      revert AlreadyRefunded();
+    }
+
+    if (allocation.claimed > 0) {
+      revert AlreadyClaimed();
+    }
+
+    allocation.refunded = true;
+
+    _setAllocation(sender, 0);
+
+    emit Refund(sender);
+  }
+
   function withdrawExcessAmount() external nonReentrant onlyOwner {
     uint256 amount = calculateExcessAmount();
     address to = owner();
     erc20Token.safeTransfer(to, amount);
     emit WithdrawExcessAmount(to, amount);
+  }
+
+  function forceWithdraw(address token, address to, uint256 amount) external onlyOwner {
+    IERC20 _token = IERC20(token);
+    _token.safeTransfer(to, amount);
+    emit ForceWithdraw(token, to, amount);
   }
 }

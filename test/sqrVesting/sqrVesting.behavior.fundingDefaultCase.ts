@@ -7,7 +7,12 @@ import { waitTx } from '~common-contract';
 import { contractConfig, seedData } from '~seeds';
 import { addSecondsToUnixTime, calculateAllocation } from '~utils';
 import { customError } from './testData';
-import { ClaimEventArgs, SetAllocationEventArgs, WithdrawExcessAmountEventArgs } from './types';
+import {
+  ClaimEventArgs,
+  ForceWithdrawEventArgs,
+  SetAllocationEventArgs,
+  WithdrawExcessAmountEventArgs,
+} from './types';
 import {
   calculateClaimAt,
   checkTotalSQRBalance,
@@ -47,21 +52,25 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
         claimed,
         claimedAt,
         exist,
+        refunded,
         canClaim,
         available,
         remain,
         nextAvailable,
         nextClaimAt,
+        canRefund,
       } = claimInfo;
       expect(amount).eq(seedData.zero);
       expect(claimed).eq(seedData.zero);
       expect(claimedAt).eq(seedData.zero);
       expect(exist).eq(false);
+      expect(refunded).eq(false);
       expect(canClaim).eq(false);
       expect(available).eq(seedData.zero);
       expect(remain).eq(seedData.zero);
       expect(nextAvailable).eq(seedData.zero);
       expect(nextClaimAt).eq(0);
+      expect(canRefund).eq(true);
     });
 
     it('user1 tries to claim without allocation', async function () {
@@ -103,6 +112,20 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
         expect(await this.owner2SQRVesting.calculatedRequiredAmount()).eq(seedData.zero);
         expect(await this.owner2SQRVesting.calculateExcessAmount()).eq(seedData.companyVesting);
         expect(await this.owner2SQRVesting.getBalance()).eq(seedData.companyVesting);
+      });
+
+      it('user1 tries to call forceWithdraw without permission', async function () {
+        const contractAmount = await this.ownerSQRVesting.getBalance();
+
+        await expect(
+          this.user1SQRVesting.forceWithdraw(
+            this.erc20TokenAddress,
+            this.user3Address,
+            contractAmount,
+          ),
+        )
+          .revertedWithCustomError(this.ownerSQRVesting, customError.ownableUnauthorizedAccount)
+          .withArgs(this.user1Address);
       });
 
       it('user1 tries to set allocation without permission', async function () {
@@ -197,6 +220,32 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
         expect(amount).eq(seedData.allocation1);
       });
 
+      it('owner2 call forceWithdraw (check event)', async function () {
+        expect(await getERC20TokenBalance(this, this.user3Address)).eq(seedData.zero);
+
+        const contractAmount = await this.owner2SQRVesting.getBalance();
+
+        const receipt = await waitTx(
+          this.owner2SQRVesting.forceWithdraw(
+            this.erc20TokenAddress,
+            this.user3Address,
+            contractAmount,
+          ),
+        );
+        const eventLog = findEvent<ForceWithdrawEventArgs>(receipt);
+
+        expect(eventLog).not.undefined;
+        const [token, to, amount] = eventLog?.args;
+        expect(token).eq(this.erc20TokenAddress);
+        expect(to).eq(this.user3Address);
+        expect(amount).closeTo(contractAmount, seedData.balanceDelta);
+
+        expect(await getERC20TokenBalance(this, this.sqrVestingAddress)).eq(seedData.zero);
+        expect(await getERC20TokenBalance(this, this.user1Address)).eq(seedData.zero);
+        expect(await getERC20TokenBalance(this, this.user2Address)).eq(seedData.zero);
+        expect(await getERC20TokenBalance(this, this.user3Address)).eq(contractAmount);
+      });
+
       describe('set first allocation', () => {
         beforeEach(async function () {
           await this.owner2SQRVesting.setAllocation(this.user1Address, seedData.allocation1);
@@ -220,16 +269,19 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
             claimed,
             claimedAt,
             exist,
+            refunded,
             canClaim,
             available,
             remain,
             nextAvailable,
             nextClaimAt,
+            canRefund,
           } = claimInfo;
           expect(amount).eq(seedData.allocation1);
           expect(claimed).eq(seedData.zero);
           expect(claimedAt).eq(seedData.zero);
           expect(exist).eq(true);
+          expect(refunded).eq(false);
           expect(canClaim).eq(false);
           expect(available).eq(seedData.zero);
           expect(remain).eq(seedData.allocation1);
@@ -237,6 +289,7 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
             calculateAllocation(seedData.allocation1, contractConfig.firstUnlockPercent),
           );
           expect(nextClaimAt).closeTo(contractConfig.startDate, seedData.timeDelta);
+          expect(canRefund).eq(true);
         });
 
         it('owner2 overridden first allocation to larger one', async function () {
@@ -303,16 +356,19 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
               claimed,
               claimedAt,
               exist,
+              refunded,
               canClaim,
               available,
               remain,
               nextAvailable,
               nextClaimAt,
+              canRefund,
             } = claimInfo;
             expect(amount).eq(seedData.allocation1);
             expect(claimed).eq(seedData.zero);
             expect(claimedAt).eq(seedData.zero);
             expect(exist).eq(true);
+            expect(refunded).eq(false);
             expect(canClaim).eq(true);
             expect(available).eq(
               calculateAllocation(seedData.allocation1, contractConfig.firstUnlockPercent),
@@ -322,6 +378,7 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
               calculateAllocation(seedData.allocation1, contractConfig.firstUnlockPercent),
             );
             expect(nextClaimAt).closeTo(contractConfig.startDate, seedData.timeDelta);
+            expect(canRefund).eq(true);
           });
 
           it('user1 is allowed to stake (check event)', async function () {
@@ -372,21 +429,25 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
                 claimed,
                 claimedAt,
                 exist,
+                refunded,
                 canClaim,
                 available,
                 remain,
                 nextAvailable,
                 nextClaimAt,
+                canRefund,
               } = claimInfo;
               expect(amount).eq(seedData.allocation1);
               expect(claimed).eq(unlockAllocation);
               expect(claimedAt).closeTo(contractConfig.startDate, seedData.timeDelta);
               expect(exist).eq(true);
+              expect(refunded).eq(false);
               expect(canClaim).eq(false);
               expect(available).eq(seedData.zero);
               expect(remain).eq(seedData.allocation1 - unlockAllocation);
               expect(nextAvailable).eq(seedData.zero);
               expect(nextClaimAt).closeTo(calculateClaimAt(contractConfig, 1), seedData.timeDelta);
+              expect(canRefund).eq(false);
             });
 
             it('owner2 tries to reset first allocation', async function () {
@@ -478,6 +539,7 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
                     claimed,
                     claimedAt,
                     exist,
+                    refunded,
                     canClaim,
                     available,
                     remain,
@@ -491,6 +553,7 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
                     seedData.timeDelta,
                   );
                   expect(exist).eq(true);
+                  expect(refunded).eq(false);
                   expect(canClaim).eq(false);
                   expect(available).eq(seedData.zero);
                   expect(remain).eq(seedData.allocation1 - unlockAllocation);
@@ -562,11 +625,13 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
                       claimed,
                       claimedAt,
                       exist,
+                      refunded,
                       canClaim,
                       available,
                       remain,
                       nextAvailable,
                       nextClaimAt,
+                      canRefund,
                     } = claimInfo;
                     expect(amount).eq(seedData.allocation1);
                     expect(claimed).eq(unlockAllocation);
@@ -575,6 +640,7 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
                       seedData.timeDelta,
                     );
                     expect(exist).eq(true);
+                    expect(refunded).eq(false);
                     expect(canClaim).eq(false);
                     expect(available).eq(seedData.zero);
                     expect(remain).eq(seedData.allocation1 - unlockAllocation);
@@ -585,6 +651,7 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
                       calculateClaimAt(contractConfig, 3),
                       seedData.timeDelta,
                     );
+                    expect(canRefund).eq(false);
                   });
 
                   it('user1 tries to claim again in the same period with 1 day delay', async function () {
@@ -638,11 +705,13 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
                         claimed,
                         claimedAt,
                         exist,
+                        refunded,
                         canClaim,
                         available,
                         remain,
                         nextAvailable,
                         nextClaimAt,
+                        canRefund,
                       } = claimInfo;
                       expect(amount).eq(seedData.allocation1);
                       expect(claimed).eq(seedData.allocation1);
@@ -651,11 +720,13 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
                         seedData.timeDelta,
                       );
                       expect(exist).eq(true);
+                      expect(refunded).eq(false);
                       expect(canClaim).eq(false);
                       expect(available).eq(seedData.zero);
                       expect(remain).eq(seedData.zero);
                       expect(nextAvailable).eq(seedData.zero);
                       expect(nextClaimAt).eq(0);
+                      expect(canRefund).eq(false);
                     });
 
                     it('user1 tries to claim again in the same period with 1 day delay', async function () {

@@ -1,5 +1,6 @@
 import {
   ClaimEvent,
+  ForceWithdrawEvent,
   SetAllocationEvent,
   WithdrawExcessAmountEvent,
 } from '~typechain-types/contracts/SQRVesting';
@@ -23,3 +24,5 @@ export type SetAllocationEventArgs = SetAllocationEvent.Event & EventArgs<[strin
 
 export type WithdrawExcessAmountEventArgs = WithdrawExcessAmountEvent.Event &
   EventArgs<[string, number]>;
+
+export type ForceWithdrawEventArgs = ForceWithdrawEvent.Event & EventArgs<[string, string, number]>;
