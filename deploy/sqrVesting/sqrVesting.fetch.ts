@@ -8,10 +8,8 @@ import {
   getERC20TokenContext,
   getSQRVestingContext,
   getUsers,
-  printClaimInfo,
+  printUserInfo,
 } from '~utils';
-
-// const _userAddress = '0x2C5459BB28254cc96944c50090f4Bd0eF045A937';
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<void> => {
   await callWithTimerHre(async () => {
@@ -21,12 +19,13 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     const { owner2SQRVesting } = await getSQRVestingContext(users, sqrVestingAddress);
     const erc20Token = await owner2SQRVesting.erc20Token();
     const { ownerERC20Token } = await getERC20TokenContext(users, erc20Token);
-    const decimals = Number(await ownerERC20Token.decimals());
-    const tokenName = await ownerERC20Token.name();
 
-    const { user1Address } = users;
-    const userAddress = user1Address;
-    // const userAddress = _userAddress;
+    const [decimals, tokenName] = await Promise.all([
+      ownerERC20Token.decimals(),
+      ownerERC20Token.name(),
+    ]);
+
+    const { user1Address, user2Address, user3Address } = users;
 
     const result = {
       owner: await owner2SQRVesting.owner(),
@@ -44,6 +43,11 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
         DEFAULT_DECIMALS,
         '%',
       ),
+      availableRefund: await owner2SQRVesting.availableRefund(),
+      refundStartDate: printDate(await owner2SQRVesting.refundStartDate()),
+      refundCloseDate: printDate(await owner2SQRVesting.refundCloseDate()),
+      //Custom
+      balance: printToken(await owner2SQRVesting.getBalance(), decimals, tokenName),
       allocationCount: Number(await owner2SQRVesting.getAllocationCount()),
       requiredAmount: printToken(
         await owner2SQRVesting.calculatedRequiredAmount(),
@@ -51,13 +55,17 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
         tokenName,
       ),
       excessAmount: printToken(await owner2SQRVesting.calculateExcessAmount(), decimals, tokenName),
+      totalClaimed: printToken(await owner2SQRVesting.getTotalClaimed(), decimals, tokenName),
       passedPeriod: Number(await owner2SQRVesting.calculatePassedPeriod()),
       maxPeriod: Number(await owner2SQRVesting.calculateMaxPeriod()),
       finishDate: printDate(await owner2SQRVesting.calculateFinishDate()),
-      info: printClaimInfo(await owner2SQRVesting.fetchClaimInfo(userAddress), decimals, tokenName),
     };
 
-    console.log(result);
+    console.table(result);
+
+    await printUserInfo(user1Address, owner2SQRVesting, decimals, tokenName);
+    await printUserInfo(user2Address, owner2SQRVesting, decimals, tokenName);
+    await printUserInfo(user3Address, owner2SQRVesting, decimals, tokenName);
   }, hre);
 };
 

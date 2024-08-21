@@ -10,6 +10,7 @@ import { customError } from './testData';
 import {
   ClaimEventArgs,
   ForceWithdrawEventArgs,
+  RefundEventArgs,
   SetAllocationEventArgs,
   WithdrawExcessAmountEventArgs,
 } from './types';
@@ -70,7 +71,7 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
       expect(remain).eq(seedData.zero);
       expect(nextAvailable).eq(seedData.zero);
       expect(nextClaimAt).eq(0);
-      expect(canRefund).eq(true);
+      expect(canRefund).eq(false);
     });
 
     it('user1 tries to claim without allocation', async function () {
@@ -289,7 +290,7 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
             calculateAllocation(seedData.allocation1, contractConfig.firstUnlockPercent),
           );
           expect(nextClaimAt).closeTo(contractConfig.startDate, seedData.timeDelta);
-          expect(canRefund).eq(true);
+          expect(canRefund).eq(false);
         });
 
         it('owner2 overridden first allocation to larger one', async function () {
@@ -381,7 +382,7 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
             expect(canRefund).eq(true);
           });
 
-          it('user1 is allowed to stake (check event)', async function () {
+          it('user1 is allowed to claim (check event)', async function () {
             const receipt = await waitTx(this.user1SQRVesting.claim());
             const eventLog = findEvent<ClaimEventArgs>(receipt);
             expect(eventLog).not.undefined;
@@ -390,6 +391,14 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
             expect(amount).eq(
               calculateAllocation(seedData.allocation1, contractConfig.firstUnlockPercent),
             );
+          });
+
+          it('user1 is allowed to refund (check event)', async function () {
+            const receipt = await waitTx(this.user1SQRVesting.refund());
+            const eventLog = findEvent<RefundEventArgs>(receipt);
+            expect(eventLog).not.undefined;
+            const [account] = eventLog?.args;
+            expect(account).eq(this.user1Address);
           });
 
           describe('user1 claimed first unlock', () => {
@@ -777,6 +786,57 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
                   });
                 });
               });
+            });
+          });
+
+          describe('set time after refund close date', () => {
+            beforeEach(async function () {
+              await time.increaseTo(
+                addSecondsToUnixTime(contractConfig.refundCloseDate, seedData.timeShift),
+              );
+            });
+
+            it(INITIAL_POSITIVE_CHECK_TEST_TITLE, async function () {
+              expect(await this.owner2SQRVesting.getTotalAllocated()).eq(seedData.allocation1);
+              expect(await this.owner2SQRVesting.calculatedRequiredAmount()).eq(seedData.zero);
+              expect(await this.owner2SQRVesting.calculateExcessAmount()).eq(
+                seedData.companyVesting - seedData.allocation1,
+              );
+
+              expect(await this.owner2SQRVesting.calculatePassedPeriod()).eq(0);
+
+              expect(await this.owner2SQRVesting.getAllocationCount()).eq(1);
+              expect(await this.owner2SQRVesting.isAllocationFinished(this.user1Address)).eq(false);
+
+              const claimInfo = await this.owner2SQRVesting.fetchClaimInfo(this.user1Address);
+              const {
+                amount,
+                claimed,
+                claimedAt,
+                exist,
+                refunded,
+                canClaim,
+                available,
+                remain,
+                nextAvailable,
+                nextClaimAt,
+                canRefund,
+              } = claimInfo;
+              expect(amount).eq(seedData.allocation1);
+              expect(claimed).eq(seedData.zero);
+              expect(claimedAt).eq(seedData.zero);
+              expect(exist).eq(true);
+              expect(refunded).eq(false);
+              expect(canClaim).eq(true);
+              expect(available).eq(
+                calculateAllocation(seedData.allocation1, contractConfig.firstUnlockPercent),
+              );
+              expect(remain).eq(seedData.allocation1);
+              expect(nextAvailable).eq(
+                calculateAllocation(seedData.allocation1, contractConfig.firstUnlockPercent),
+              );
+              expect(nextClaimAt).closeTo(contractConfig.startDate, seedData.timeDelta);
+              expect(canRefund).eq(false);
             });
           });
         });

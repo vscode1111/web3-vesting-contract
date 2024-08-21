@@ -1,9 +1,10 @@
+import { Numeric } from 'ethers';
 import { printDate, printToken } from '~common-contract';
 import { SQRVesting } from '~typechain-types/contracts/SQRVesting';
 
 export function printClaimInfo(
   claimInfo: SQRVesting.ClaimInfoStruct,
-  decimals: number,
+  decimals: Numeric,
   tokenName?: string,
 ) {
   const {
@@ -33,4 +34,19 @@ export function printClaimInfo(
     nextAvailable: printToken(nextAvailable, decimals, tokenName),
     canRefund,
   };
+}
+
+export async function printUserInfo(
+  userAddress: string,
+  owner2SQRVesting: SQRVesting,
+  decimals: Numeric,
+  tokenName: string,
+) {
+  console.log(`User ${userAddress}:`);
+  const user1Info = printClaimInfo(
+    await owner2SQRVesting.fetchClaimInfo(userAddress),
+    decimals,
+    tokenName,
+  );
+  console.table(user1Info);
 }

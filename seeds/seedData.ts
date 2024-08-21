@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import { DAYS, MINUTES, toUnixTime, toUnixTimeUtc, toWei } from '~common';
-import { TokenAddressDescription } from '~common-contract';
+import { MATAN_WALLET_COMMON, TokenAddressDescription } from '~common-contract';
 import { Token, ZERO } from '~constants';
 import { DeployNetworkKey } from '~types';
 import { addSecondsToUnixTime } from '~utils/common';
@@ -29,30 +29,37 @@ export const { address: tokenAddress, decimals: tokenDecimals } =
 
 const priceDiv = BigInt(1);
 export const now = dayjs();
+const startDate = now.add(5, 'minutes');
+const refundCloseDate = startDate.add(10, 'minutes');
 
 export const contractConfigDeployMap: Record<DeployType, Partial<ContractConfig>> = {
   test: {
-    newOwner: '0x627Ab3fbC3979158f451347aeA288B0A3A47E1EF',
-    startDate: toUnixTime(now.add(5, 'days').toDate()),
+    newOwner: '0x627Ab3fbC3979158f451347aeA288B0A3A47E1EF', //s-owner2
+    startDate: toUnixTime(startDate.toDate()),
     cliffPeriod: 90 * DAYS,
     firstUnlockPercent: calculatePercentForContract(10),
     unlockPeriod: 30 * DAYS,
     unlockPeriodPercent: calculatePercentForContract(20),
+    availableRefund: true,
+    refundStartDate: toUnixTime(startDate.toDate()),
+    refundCloseDate: toUnixTime(refundCloseDate.toDate()),
   },
   main: {
-    newOwner: '0x627Ab3fbC3979158f451347aeA288B0A3A47E1EF',
-    // startDate: toUnixTime(now.add(10, 'minutes').toDate()),
-    startDate: 1724081639,
-    erc20Token: '0xa7D4078926d6fB63d843F17811893E29Cdb2fecA', //Temp01 - mainnet
-    // startDate: 1718299329,
+    newOwner: '0x627Ab3fbC3979158f451347aeA288B0A3A47E1EF', //s-owner2
+    startDate: toUnixTime(startDate.toDate()),
+    // startDate: 1724081639,
+    // erc20Token: '0xa7D4078926d6fB63d843F17811893E29Cdb2fecA', //Temp01 - mainnet
+    erc20Token: '0x8364a68c32E581332b962D88CdC8dBe8b3e0EE9c', //tSQR2
     cliffPeriod: 0,
     firstUnlockPercent: calculatePercentForContract(50),
-    // unlockPeriod: 7 * DAYS,
     unlockPeriod: 1 * MINUTES,
     unlockPeriodPercent: calculatePercentForContract(0.001),
+    availableRefund: true,
+    refundStartDate: toUnixTime(startDate.toDate()),
+    refundCloseDate: toUnixTime(refundCloseDate.toDate()),
   },
   stage: {
-    newOwner: '0x627Ab3fbC3979158f451347aeA288B0A3A47E1EF',
+    newOwner: '0x627Ab3fbC3979158f451347aeA288B0A3A47E1EF', //s-owner2
     erc20Token: '0x2B72867c32CF673F7b02d208B26889fEd353B1f8', //SQR
     startDate: toUnixTime(now.add(2, 'minutes').toDate()),
     cliffPeriod: 0,
@@ -61,8 +68,8 @@ export const contractConfigDeployMap: Record<DeployType, Partial<ContractConfig>
     unlockPeriodPercent: calculatePercentForContract(25),
   },
   prod: {
-    // newOwner: '0xA8B8455ad9a1FAb1d4a3B69eD30A52fBA82549Bb', //Matan
-    newOwner: '0x627Ab3fbC3979158f451347aeA288B0A3A47E1EF',
+    newOwner: MATAN_WALLET_COMMON, //Matan
+    // newOwner: '0x627Ab3fbC3979158f451347aeA288B0A3A47E1EF', //s-owner2
     erc20Token: '0x2B72867c32CF673F7b02d208B26889fEd353B1f8', //SQR
     // startDate: toUnixTime(now.add(5, 'minutes').toDate()),
     startDate: toUnixTimeUtc(new Date(2024, 7, 26, 14, 0, 0)),
@@ -76,36 +83,21 @@ export const contractConfigDeployMap: Record<DeployType, Partial<ContractConfig>
 const extContractConfig = contractConfigDeployMap[deployType];
 
 export const contractConfig: ContractConfig = {
-  newOwner: '0x627Ab3fbC3979158f451347aeA288B0A3A47E1EF',
+  newOwner: '0x627Ab3fbC3979158f451347aeA288B0A3A47E1EF', //s-owner2
   erc20Token: tokenAddress,
   startDate: toUnixTime(now.add(1, 'days').toDate()),
   cliffPeriod: 90 * DAYS,
   firstUnlockPercent: calculatePercentForContract(10),
   unlockPeriod: 30 * DAYS,
   unlockPeriodPercent: calculatePercentForContract(20),
+  availableRefund: false,
+  refundStartDate: 0,
+  refundCloseDate: 0,
   ...extContractConfig,
 };
 
 export function getContractArgs(contractConfig: ContractConfig): DeployContractArgs {
-  const {
-    newOwner,
-    erc20Token,
-    startDate,
-    cliffPeriod: cliffDate,
-    firstUnlockPercent,
-    unlockPeriod,
-    unlockPeriodPercent,
-  } = contractConfig;
-
-  return [
-    newOwner,
-    erc20Token,
-    startDate,
-    cliffDate,
-    firstUnlockPercent,
-    unlockPeriod,
-    unlockPeriodPercent,
-  ];
+  return [contractConfig];
 }
 
 export const tokenConfig: TokenConfig = {
@@ -129,6 +121,7 @@ export function getTokenArgs(newOwner: string): DeployTokenArgs {
 export const seedData = {
   zero: ZERO,
   tiny: BigInt(1),
+  now,
   totalAccountBalance: tokenConfig.initMint,
   companyVesting: toWei(120_000, tokenDecimals),
   allocation1: toWei(30_000, tokenDecimals) / priceDiv,
@@ -138,5 +131,5 @@ export const seedData = {
   timeDelta: 30,
   nowPlus1m: toUnixTime(now.add(1, 'minute').toDate()),
   startDatePlus1m: addSecondsToUnixTime(contractConfig.startDate, 1 * MINUTES),
-  // timeShift: 0,
+  timeShift: 10,
 };

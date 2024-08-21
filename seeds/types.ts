@@ -6,17 +6,12 @@ export interface ContractConfig {
   firstUnlockPercent: bigint;
   unlockPeriod: number;
   unlockPeriodPercent: bigint;
+  availableRefund: boolean;
+  refundStartDate: number;
+  refundCloseDate: number;
 }
 
-export type DeployContractArgs = [
-  newOwner: string,
-  erc20Token: string,
-  startDate: number,
-  cliffPeriod: number,
-  firstUnlockPercent: bigint,
-  unlockPeriod: number,
-  unlockPeriodPercent: bigint,
-];
+export type DeployContractArgs = [ContractConfig];
 
 export interface TokenConfig {
   name: string;

@@ -1,6 +1,7 @@
 import {
   ClaimEvent,
   ForceWithdrawEvent,
+  RefundEvent,
   SetAllocationEvent,
   WithdrawExcessAmountEvent,
 } from '~typechain-types/contracts/SQRVesting';
@@ -19,6 +20,7 @@ export interface EventArgs<T> {
 }
 
 export type ClaimEventArgs = ClaimEvent.Event & EventArgs<[string, number]>;
+export type RefundEventArgs = RefundEvent.Event & EventArgs<[string]>;
 
 export type SetAllocationEventArgs = SetAllocationEvent.Event & EventArgs<[string, number]>;
 

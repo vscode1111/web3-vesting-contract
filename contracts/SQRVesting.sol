@@ -7,12 +7,14 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IContractInfo} from "./IContractInfo.sol";
 
+import "hardhat/console.sol";
+
 contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo {
   using SafeERC20 for IERC20;
 
   //Variables, structs, errors, modifiers, events------------------------
 
-  string public constant VERSION = "1.2";
+  string public constant VERSION = "2.0";
 
   IERC20 public erc20Token;
   uint32 public startDate;
@@ -20,51 +22,87 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo {
   uint256 public firstUnlockPercent;
   uint32 public unlockPeriod;
   uint256 public unlockPeriodPercent;
+  bool public availableRefund;
+  uint32 public refundStartDate;
+  uint32 public refundCloseDate;
 
   mapping(address account => Allocation allocation) public allocations;
 
   uint256 public constant PERCENT_DIVIDER = 1e18 * 100;
 
-  constructor(
-    address _newOwner,
-    address _erc20Token,
-    uint32 _startDate,
-    uint32 _cliffPeriod,
-    uint256 _firstUnlockPercent,
-    uint32 _unlockPeriod,
-    uint256 _unlockPeriodPercent
-  ) Ownable(_newOwner) {
-    if (_erc20Token == address(0)) {
+  constructor(ContractParams memory contractParams) Ownable(contractParams.newOwner) {
+    if (contractParams.erc20Token == address(0)) {
       revert ERC20TokenNotZeroAddress();
     }
 
-    if (_firstUnlockPercent > PERCENT_DIVIDER) {
+    if (contractParams.firstUnlockPercent > PERCENT_DIVIDER) {
       revert FirstUnlockPercentMustBeLessThanPercentDivider();
     }
 
-    if (_startDate < uint32(block.timestamp)) {
+    if (contractParams.startDate < uint32(block.timestamp)) {
       revert StartDateMustBeGreaterThanCurrentTime();
     }
 
-    if (_unlockPeriod == 0) {
+    if (contractParams.unlockPeriod == 0) {
       revert UnlockPeriodNotZero();
     }
 
-    if (_unlockPeriodPercent == 0) {
+    if (contractParams.unlockPeriodPercent == 0) {
       revert UnlockPeriodPercentNotZero();
     }
 
-    erc20Token = IERC20(_erc20Token);
-    startDate = _startDate;
-    cliffPeriod = _cliffPeriod;
-    firstUnlockPercent = _firstUnlockPercent;
-    unlockPeriod = _unlockPeriod;
-    unlockPeriodPercent = _unlockPeriodPercent;
+    if (contractParams.availableRefund) {
+      if (contractParams.refundStartDate < uint32(block.timestamp)) {
+        revert RefundStartDateMustBeGreaterThanCurrentTime();
+      }
+
+      if (contractParams.refundStartDate > contractParams.refundCloseDate) {
+        revert RefundCloseDateMustBeGreaterThanRefundStartDate();
+      }
+    }
+
+    erc20Token = IERC20(contractParams.erc20Token);
+    startDate = contractParams.startDate;
+    cliffPeriod = contractParams.cliffPeriod;
+    firstUnlockPercent = contractParams.firstUnlockPercent;
+    unlockPeriod = contractParams.unlockPeriod;
+    unlockPeriodPercent = contractParams.unlockPeriodPercent;
+    availableRefund = contractParams.availableRefund;
+    refundStartDate = contractParams.refundStartDate;
+    refundCloseDate = contractParams.refundCloseDate;
   }
 
   uint32 private _allocationCounter;
   uint256 private totalReserved;
   uint256 private totalAllocated;
+  uint256 private totalClaimed;
+
+  modifier alreadyRefundedChecker() {
+    if (allocations[_msgSender()].refunded) {
+      revert AlreadyRefunded();
+    }
+    _;
+  }
+
+  modifier refunUnavailableChecker() {
+    if (!availableRefund) {
+      revert RefunUnavailable();
+    }
+    _;
+  }
+
+  struct ContractParams {
+    address newOwner;
+    address erc20Token;
+    uint32 startDate;
+    uint32 cliffPeriod;
+    uint256 firstUnlockPercent;
+    uint32 unlockPeriod;
+    uint256 unlockPeriodPercent;
+    bool availableRefund;
+    uint32 refundStartDate;
+    uint32 refundCloseDate;
+  }
 
   struct Allocation {
     uint256 amount;
@@ -93,6 +131,9 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo {
   event SetAllocation(address indexed account, uint256 amount);
   event WithdrawExcessAmount(address indexed to, uint256 amount);
   event ForceWithdraw(address indexed token, address indexed to, uint256 amount);
+  event SetAvailableRefund(address indexed account, bool value);
+  event SetRefundStartDate(address indexed account, uint32 value);
+  event SetRefundCloseDate(address indexed account, uint32 value);
 
   error ERC20TokenNotZeroAddress();
   error FirstUnlockPercentMustBeLessThanPercentDivider();
@@ -106,6 +147,13 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo {
   error CantChangeOngoingVesting();
   error AlreadyRefunded();
   error AlreadyClaimed();
+  error RefundStartDateMustBeGreaterThanCurrentTime();
+  error RefundStartDateMustBeLessThanRefundCloseDate();
+  error RefundCloseDateMustBeGreaterThanCurrentTime();
+  error RefundCloseDateMustBeGreaterThanRefundStartDate();
+  error RefunUnavailable();
+  error TooEarlyToRefund();
+  error TooLateToRefund();
 
   //Read methods-------------------------------------------
   //IContractInfo implementation
@@ -207,7 +255,12 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo {
   }
 
   function canRefund(address account) public view returns (bool) {
-    return allocations[account].claimed == 0 && !allocations[account].refunded;
+    return
+      availableRefund &&
+      refundStartDate <= (uint32)(block.timestamp) &&
+      (uint32)(block.timestamp) <= refundCloseDate &&
+      allocations[account].claimed == 0 &&
+      !allocations[account].refunded;
   }
 
   function fetchClaimInfo(address account) external view returns (ClaimInfo memory) {
@@ -237,6 +290,10 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo {
 
   function getTotalAllocated() public view returns (uint256) {
     return totalAllocated;
+  }
+
+  function getTotalClaimed() public view returns (uint256) {
+    return totalClaimed;
   }
 
   function calculatedRequiredAmount() public view returns (uint256) {
@@ -301,7 +358,7 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo {
     }
   }
 
-  function claim() external nonReentrant {
+  function claim() external nonReentrant alreadyRefundedChecker {
     address sender = _msgSender();
     uint256 claimAmount = calculateClaimAmount(sender, 0);
 
@@ -320,18 +377,24 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo {
 
     totalReserved -= claimAmount;
 
+    totalClaimed += claimAmount;
+
     erc20Token.safeTransfer(sender, claimAmount);
 
     emit Claim(sender, claimAmount);
   }
 
-  function refund() external nonReentrant {
+  function refund() external refunUnavailableChecker alreadyRefundedChecker {
+    if ((uint32)(block.timestamp) < refundStartDate) {
+      revert TooEarlyToRefund();
+    }
+
+    if ((uint32)(block.timestamp) > refundCloseDate) {
+      revert TooLateToRefund();
+    }
+
     address sender = _msgSender();
     Allocation storage allocation = allocations[sender];
-
-    if (allocation.refunded) {
-      revert AlreadyRefunded();
-    }
 
     if (allocation.claimed > 0) {
       revert AlreadyClaimed();
@@ -342,6 +405,37 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo {
     _setAllocation(sender, 0);
 
     emit Refund(sender);
+  }
+
+  function setAvailableRefund(bool value) external onlyOwner {
+    availableRefund = value;
+    emit SetAvailableRefund(_msgSender(), value);
+  }
+
+  function setRefundStartDate(uint32 value) external onlyOwner refunUnavailableChecker {
+    if (value < uint32(block.timestamp)) {
+      revert RefundStartDateMustBeGreaterThanCurrentTime();
+    }
+
+    if (value > refundCloseDate) {
+      revert RefundStartDateMustBeLessThanRefundCloseDate();
+    }
+
+    refundStartDate = value;
+    emit SetRefundStartDate(_msgSender(), value);
+  }
+
+  function setRefundCloseDate(uint32 value) external onlyOwner refunUnavailableChecker {
+    if (value < uint32(block.timestamp)) {
+      revert RefundCloseDateMustBeGreaterThanCurrentTime();
+    }
+
+    if (value < refundStartDate) {
+      revert RefundCloseDateMustBeGreaterThanRefundStartDate();
+    }
+
+    refundCloseDate = value;
+    emit SetRefundCloseDate(_msgSender(), value);
   }
 
   function withdrawExcessAmount() external nonReentrant onlyOwner {

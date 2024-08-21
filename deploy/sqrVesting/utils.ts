@@ -8,12 +8,15 @@ export function getContractArgsEx() {
 }
 
 export function formatContractConfig(contractConfig: ContractConfig) {
-  const { startDate, firstUnlockPercent, unlockPeriodPercent } = contractConfig;
+  const { startDate, firstUnlockPercent, unlockPeriodPercent, refundStartDate, refundCloseDate } =
+    contractConfig;
 
   return {
     ...contractConfig,
     startDate: printDate(startDate),
     firstUnlockPercent: printToken(firstUnlockPercent, DEFAULT_DECIMALS, '%'),
     unlockPeriodPercent: printToken(unlockPeriodPercent, DEFAULT_DECIMALS, '%'),
+    refundStartDate: printDate(refundStartDate),
+    refundCloseDate: printDate(refundCloseDate),
   };
 }

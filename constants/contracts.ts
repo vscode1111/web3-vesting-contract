@@ -2,7 +2,7 @@ import { TransactionRequest } from 'ethers';
 import { TokenDescription } from '~common-contract';
 
 export const CONTRACT_NAME = 'Vesting';
-export const CONTRACT_VERSION = '1.2';
+export const CONTRACT_VERSION = '2.0';
 
 export const PERCENT_DIVIDER = BigInt(10 ** 18);
 
