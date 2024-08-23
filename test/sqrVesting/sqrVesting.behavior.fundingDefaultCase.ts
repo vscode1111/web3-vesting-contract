@@ -47,6 +47,7 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
       expect(await this.owner2SQRVesting.allocationCount()).eq(0);
       expect(await this.owner2SQRVesting.refundCount()).eq(0);
       expect(await this.owner2SQRVesting.isAllocationFinished(this.user1Address)).eq(true);
+      expect(await this.owner2SQRVesting.getAccountCount()).eq(0);
 
       const claimInfo = await this.owner2SQRVesting.fetchClaimInfo(this.user1Address);
       const {
@@ -54,13 +55,13 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
         claimed,
         claimedAt,
         exist,
-        refunded,
         canClaim,
         available,
         remain,
         nextAvailable,
         nextClaimAt,
         canRefund,
+        refunded,
       } = claimInfo;
       expect(amount).eq(seedData.zero);
       expect(claimed).eq(seedData.zero);
@@ -265,6 +266,8 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
           expect(await this.owner2SQRVesting.allocationCount()).eq(1);
           expect(await this.owner2SQRVesting.refundCount()).eq(0);
           expect(await this.owner2SQRVesting.isAllocationFinished(this.user1Address)).eq(false);
+          expect(await this.owner2SQRVesting.getAccountCount()).eq(1);
+          expect(await this.owner2SQRVesting.getAccountByIndex(0)).eq(this.user1Address);
 
           const claimInfo = await this.owner2SQRVesting.fetchClaimInfo(this.user1Address);
           const {
@@ -386,7 +389,7 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
               calculateAllocation(seedData.allocation1, contractConfig.firstUnlockPercent),
             );
             expect(nextClaimAt).closeTo(contractConfig.startDate, seedData.timeDelta);
-            expect(canRefund).eq(true);
+            expect(canRefund).eq(false);
           });
 
           it('user1 is allowed to claim (check event)', async function () {
@@ -400,12 +403,59 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
             );
           });
 
-          it('user1 is allowed to refund (check event)', async function () {
-            const receipt = await waitTx(this.user1SQRVesting.refund());
-            const eventLog = findEvent<RefundEventArgs>(receipt);
-            expect(eventLog).not.undefined;
-            const [account] = eventLog?.args;
-            expect(account).eq(this.user1Address);
+          describe('set time after refund start date', () => {
+            beforeEach(async function () {
+              await time.increaseTo(contractConfig.refundStartDate);
+            });
+
+            it(INITIAL_POSITIVE_CHECK_TEST_TITLE, async function () {
+              const claimInfo = await this.owner2SQRVesting.fetchClaimInfo(this.user1Address);
+              const {
+                amount,
+                claimed,
+                claimedAt,
+                exist,
+                refunded,
+                canClaim,
+                available,
+                remain,
+                nextAvailable,
+                nextClaimAt,
+                canRefund,
+              } = claimInfo;
+              expect(amount).eq(seedData.allocation1);
+              expect(claimed).eq(seedData.zero);
+              expect(claimedAt).eq(seedData.zero);
+              expect(exist).eq(true);
+              expect(refunded).eq(false);
+              expect(canClaim).eq(true);
+              expect(available).eq(
+                calculateAllocation(seedData.allocation1, contractConfig.firstUnlockPercent),
+              );
+              expect(remain).eq(seedData.allocation1);
+              expect(nextAvailable).eq(
+                calculateAllocation(seedData.allocation1, contractConfig.firstUnlockPercent),
+              );
+              expect(nextClaimAt).closeTo(contractConfig.startDate, seedData.timeDelta);
+              expect(canRefund).eq(true);
+            });
+
+            it('user1 tries to refund when called claim previously', async function () {
+              await this.user1SQRVesting.claim();
+
+              await expect(this.user1SQRVesting.refund()).revertedWithCustomError(
+                this.owner2SQRVesting,
+                customError.alreadyClaimed,
+              );
+            });
+
+            it('user1 is allowed to refund (check event)', async function () {
+              const receipt = await waitTx(this.user1SQRVesting.refund());
+              const eventLog = findEvent<RefundEventArgs>(receipt);
+              expect(eventLog).not.undefined;
+              const [account] = eventLog?.args;
+              expect(account).eq(this.user1Address);
+            });
           });
 
           describe('user1 claimed first unlock', () => {
@@ -498,13 +548,6 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
               await expect(this.user1SQRVesting.claim()).revertedWithCustomError(
                 this.owner2SQRVesting,
                 customError.nothingToClaim,
-              );
-            });
-
-            it('user1 tries to refund when called claim previously', async function () {
-              await expect(this.user1SQRVesting.refund()).revertedWithCustomError(
-                this.owner2SQRVesting,
-                customError.alreadyClaimed,
               );
             });
 
@@ -864,43 +907,9 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
             });
           });
         });
-      });
 
-      describe.only('user2 refund case', () => {
-        beforeEach(async function () {});
-
-        it(INITIAL_POSITIVE_CHECK_TEST_TITLE, async function () {
-          const claimInfo = await this.owner2SQRVesting.fetchClaimInfo(this.user2Address);
-          const {
-            amount,
-            claimed,
-            claimedAt,
-            exist,
-            refunded,
-            canClaim,
-            available,
-            remain,
-            nextAvailable,
-            nextClaimAt,
-            canRefund,
-          } = claimInfo;
-          expect(amount).eq(seedData.zero);
-          expect(claimed).eq(seedData.zero);
-          expect(claimedAt).eq(seedData.zero);
-          expect(exist).eq(false);
-          expect(refunded).eq(false);
-          expect(canClaim).eq(false);
-          expect(available).eq(seedData.zero);
-          expect(remain).eq(seedData.zero);
-          expect(nextAvailable).eq(seedData.zero);
-          expect(nextClaimAt).eq(0);
-          expect(canRefund).eq(false);
-        });
-
-        describe('user1 got allocation', () => {
-          beforeEach(async function () {
-            await this.owner2SQRVesting.setAllocation(this.user2Address, seedData.allocation2);
-          });
+        describe('user2 refund case', () => {
+          beforeEach(async function () {});
 
           it(INITIAL_POSITIVE_CHECK_TEST_TITLE, async function () {
             const claimInfo = await this.owner2SQRVesting.fetchClaimInfo(this.user2Address);
@@ -917,28 +926,29 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
               nextClaimAt,
               canRefund,
             } = claimInfo;
-            expect(amount).eq(seedData.allocation2);
+            expect(amount).eq(seedData.zero);
             expect(claimed).eq(seedData.zero);
             expect(claimedAt).eq(seedData.zero);
-            expect(exist).eq(true);
+            expect(exist).eq(false);
             expect(refunded).eq(false);
             expect(canClaim).eq(false);
             expect(available).eq(seedData.zero);
-            expect(remain).eq(seedData.allocation2);
-            expect(nextAvailable).eq(
-              calculateAllocation(seedData.allocation2, contractConfig.firstUnlockPercent),
-            );
-            expect(nextClaimAt).closeTo(contractConfig.startDate, seedData.timeDelta);
+            expect(remain).eq(seedData.zero);
+            expect(nextAvailable).eq(seedData.zero);
+            expect(nextClaimAt).eq(0);
             expect(canRefund).eq(false);
           });
 
-          describe('set time to refundStartDate and user2 refunded', () => {
+          describe('user1 got allocation', () => {
             beforeEach(async function () {
-              await time.increaseTo(contractConfig.refundStartDate);
-              await this.user2SQRVesting.refund();
+              await this.owner2SQRVesting.setAllocation(this.user2Address, seedData.allocation2);
             });
 
-            it.only(INITIAL_POSITIVE_CHECK_TEST_TITLE, async function () {
+            it(INITIAL_POSITIVE_CHECK_TEST_TITLE, async function () {
+              expect(await this.owner2SQRVesting.getAccountCount()).eq(2);
+              expect(await this.owner2SQRVesting.getAccountByIndex(0)).eq(this.user1Address);
+              expect(await this.owner2SQRVesting.getAccountByIndex(1)).eq(this.user2Address);
+
               const claimInfo = await this.owner2SQRVesting.fetchClaimInfo(this.user2Address);
               const {
                 amount,
@@ -953,17 +963,54 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
                 nextClaimAt,
                 canRefund,
               } = claimInfo;
-              expect(amount).eq(seedData.zero);
+              expect(amount).eq(seedData.allocation2);
               expect(claimed).eq(seedData.zero);
               expect(claimedAt).eq(seedData.zero);
               expect(exist).eq(true);
-              expect(refunded).eq(true);
+              expect(refunded).eq(false);
               expect(canClaim).eq(false);
               expect(available).eq(seedData.zero);
-              expect(remain).eq(seedData.zero);
-              expect(nextAvailable).eq(seedData.zero);
-              expect(nextClaimAt).eq(0);
+              expect(remain).eq(seedData.allocation2);
+              expect(nextAvailable).eq(
+                calculateAllocation(seedData.allocation2, contractConfig.firstUnlockPercent),
+              );
+              expect(nextClaimAt).closeTo(contractConfig.startDate, seedData.timeDelta);
               expect(canRefund).eq(false);
+            });
+
+            describe('set time to refundStartDate and user2 refunded', () => {
+              beforeEach(async function () {
+                await time.increaseTo(contractConfig.refundStartDate);
+                await this.user2SQRVesting.refund();
+              });
+
+              it(INITIAL_POSITIVE_CHECK_TEST_TITLE, async function () {
+                const claimInfo = await this.owner2SQRVesting.fetchClaimInfo(this.user2Address);
+                const {
+                  amount,
+                  claimed,
+                  claimedAt,
+                  exist,
+                  refunded,
+                  canClaim,
+                  available,
+                  remain,
+                  nextAvailable,
+                  nextClaimAt,
+                  canRefund,
+                } = claimInfo;
+                expect(amount).eq(seedData.zero);
+                expect(claimed).eq(seedData.zero);
+                expect(claimedAt).eq(seedData.zero);
+                expect(exist).eq(true);
+                expect(refunded).eq(true);
+                expect(canClaim).eq(false);
+                expect(available).eq(seedData.zero);
+                expect(remain).eq(seedData.zero);
+                expect(nextAvailable).eq(seedData.zero);
+                expect(nextClaimAt).eq(0);
+                expect(canRefund).eq(false);
+              });
             });
           });
         });

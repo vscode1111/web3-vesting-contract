@@ -3,12 +3,12 @@ export interface ContractData {
   symbol: string;
 }
 
-export interface AllocationRecord {
+export interface DepositAllocationRecord {
   address: string;
   amount: bigint;
 }
 
-export interface AllocationFileRecord {
+export interface DepositAllocationFileRecord {
   address: string;
   amount: number;
 }
@@ -21,4 +21,19 @@ export interface DepositRefundRecord {
   baseRefund: number;
   boostRefund: number;
   nonce: number;
+}
+
+export interface VestingAllocationRecord {
+  address: string;
+  canClaim: boolean;
+  amount: number;
+  claimed: number;
+  claimCount: number;
+  claimedAt?: Date;
+  available: number;
+  remain: number;
+  nextAvailable: number;
+  nextClaimAt?: Date;
+  canRefund: boolean;
+  refunded: boolean;
 }

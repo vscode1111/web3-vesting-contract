@@ -30,6 +30,7 @@ export const { address: tokenAddress, decimals: tokenDecimals } =
 const priceDiv = BigInt(1);
 export const now = dayjs();
 const startDate = now.add(5, 'minutes');
+const refundStartDate = startDate.add(1, 'minutes');
 const refundCloseDate = startDate.add(10, 'minutes');
 
 export const contractConfigDeployMap: Record<DeployType, Partial<ContractConfig>> = {
@@ -41,7 +42,7 @@ export const contractConfigDeployMap: Record<DeployType, Partial<ContractConfig>
     unlockPeriod: 30 * DAYS,
     unlockPeriodPercent: calculatePercentForContract(20),
     availableRefund: true,
-    refundStartDate: toUnixTime(startDate.toDate()),
+    refundStartDate: toUnixTime(refundStartDate.toDate()),
     refundCloseDate: toUnixTime(refundCloseDate.toDate()),
   },
   main: {

@@ -5,7 +5,7 @@ export const CELL_SEPARATOR = ';';
 export const SOURCE_NUMBER_DELIMITER = '.';
 export const TARGET_NUMBER_DELIMITER = '.';
 
-export const BYPASS_CONTRACT_CHECK = true;
+export const BYPASS_DEPOSIT_CONTRACT_CHECK = true;
 export const VESTING_TOKEN_PRICE = 0.08;
 export const DEPOSIT_FIELD_FOR_VESTING_ALLOCATION: keyof DepositRefundRecord = 'baseDeposited'; //baseAllocation (default) or baseDeposited (if goal isn't reached)
 
@@ -17,3 +17,5 @@ export const DEPOSIT_FIELD_FOR_VESTING_ALLOCATION: keyof DepositRefundRecord = '
 // export const DEPOSIT_CONTRACT_ADDRESS = '0x1dA402bD37B479676CbaEAfAD52659eE3Db0F85A'; //Pro-Rata test
 // export const DEPOSIT_CONTRACT_ADDRESS = '0xD9eF052d04b6FF606A3Cb89Af86C8D0f61Ff14e7'; //Pro-Rata prod Storm Trade
 export const DEPOSIT_CONTRACT_ADDRESS = '0xce8cDE8a263515426878D5e6572E7981f6BC47Ca'; //Pro-Rata prod Fanton
+
+export const BYPASS_VESTING_CONTRACT_CHECK = true;

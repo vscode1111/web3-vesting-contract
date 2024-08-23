@@ -1,5 +1,6 @@
 import Decimal from 'decimal.js';
 import { BigNumberish, Numeric, formatEther, formatUnits, parseUnits } from 'ethers';
+import { MS_IN_SEC } from './constants';
 import { StringNumber } from './types';
 
 export const DECIMAL_FACTOR = 1e18;
@@ -55,8 +56,10 @@ export function toHex(value: number | undefined): string {
   return `0x${value.toString(16)}`;
 }
 
-export function toDate(value: StringNumber): Date {
-  return typeof value === 'string' ? new Date(toDec(value) * 1000) : new Date(value * 1000);
+export function toDate(value: StringNumber | Numeric): Date {
+  return typeof value === 'string'
+    ? new Date(toDec(value) * MS_IN_SEC)
+    : new Date(Number(value) * MS_IN_SEC);
 }
 
 export function getAddressFromSlot(value: string) {

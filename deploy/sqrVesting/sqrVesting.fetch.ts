@@ -62,6 +62,11 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
       finishDate: printDate(await owner2SQRVesting.calculateFinishDate()),
     };
 
+    const contractInfo = {
+      name: await owner2SQRVesting.getContractName(),
+      version: await owner2SQRVesting.getContractVersion(),
+    };
+    console.log(`${contractInfo.name} v${contractInfo.version}`);
     console.table(result);
 
     await printUserInfo(user1Address, owner2SQRVesting, decimals, tokenName);

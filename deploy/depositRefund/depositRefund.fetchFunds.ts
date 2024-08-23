@@ -16,7 +16,7 @@ import { DEPOSIT_REFUND_NAME } from '~constants';
 import { ERC20Token } from '~typechain-types/contracts/ERC20Token';
 import { getDepositRefundContext, getERC20TokenContext, getUsers } from '~utils';
 import {
-  BYPASS_CONTRACT_CHECK,
+  BYPASS_DEPOSIT_CONTRACT_CHECK,
   CELL_SEPARATOR,
   DEPOSIT_CONTRACT_ADDRESS,
   DEPOSIT_FIELD_FOR_VESTING_ALLOCATION,
@@ -35,7 +35,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     const { owner2DepositRefund } = await getDepositRefundContext(users, DEPOSIT_CONTRACT_ADDRESS);
 
     const isFetchReady = await owner2DepositRefund.getDepositRefundFetchReady();
-    if (!BYPASS_CONTRACT_CHECK && !isFetchReady) {
+    if (!BYPASS_DEPOSIT_CONTRACT_CHECK && !isFetchReady) {
       const closeDate = Number(await owner2DepositRefund.getCloseDate());
       console.error(`Contract isn't ready for fetching data. Close date: ${printDate(closeDate)}`);
       return;

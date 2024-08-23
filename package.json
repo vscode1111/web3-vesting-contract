@@ -1,7 +1,7 @@
 {
   "name": "sqr-vesting-contract",
   "description": "Solidity smart contracts for SQR vesting functionality",
-  "version": "0.0.37",
+  "version": "0.0.38",
   "scripts": {
     "clean": "shx rm -rf ./dist ./artifacts ./cache ./coverage ./typechain-types ./coverage.json && yarn typechain",
     "commit": "git-cz",
@@ -17,6 +17,7 @@
     "deploy:send-tokens": "hardhat deploy --tags SQRVesting:send-tokens",
     "deploy:set-allocations": "hardhat deploy --tags SQRVesting:set-allocations",
     "deploy:fetch-funds": "hardhat deploy --tags IDepositRefund:fetch-funds",
+    "deploy:fetch-allocations": "hardhat deploy --tags SQRVesting:fetch-allocations",
     "deploy:fetch-allocations-from-db": "hardhat deploy --tags SQRVesting:fetch-allocations-from-db",
     "deploy:massive-set-allocations": "hardhat deploy --tags SQRVesting:massive-set-allocations",
     "deploy:generate-random-allocations": "hardhat deploy --tags SQRVesting:generate-random-allocations",

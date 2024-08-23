@@ -12,13 +12,13 @@ export function printClaimInfo(
     claimed,
     claimedAt,
     exist,
-    refunded,
     canClaim,
     available,
     remain,
     nextClaimAt,
     nextAvailable,
     canRefund,
+    refunded,
   } = claimInfo;
 
   return {
@@ -26,13 +26,13 @@ export function printClaimInfo(
     claimed: printToken(claimed, decimals, tokenName),
     claimedAt: printDate(claimedAt),
     exist,
-    refunded,
     canClaim,
     available: printToken(available, decimals, tokenName),
     remain: printToken(remain, decimals, tokenName),
     nextClaimAt: printDate(nextClaimAt),
     nextAvailable: printToken(nextAvailable, decimals, tokenName),
     canRefund,
+    refunded,
   };
 }
 

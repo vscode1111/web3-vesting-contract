@@ -6,15 +6,16 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IContractInfo} from "./IContractInfo.sol";
+import {IAccountInfo} from "./IAccountInfo.sol";
 
 import "hardhat/console.sol";
 
-contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo {
+contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo, IAccountInfo {
   using SafeERC20 for IERC20;
 
   //Variables, structs, errors, modifiers, events------------------------
 
-  string public constant VERSION = "2.1";
+  string public constant VERSION = "2.2";
 
   IERC20 public erc20Token;
   uint32 public startDate;
@@ -27,6 +28,7 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo {
   uint32 public refundCloseDate;
 
   mapping(address account => Allocation allocation) public allocations;
+  address[] private _accountAddresses;
 
   uint256 public constant PERCENT_DIVIDER = 1e18 * 100;
 
@@ -115,6 +117,7 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo {
   struct Allocation {
     uint256 amount;
     uint256 claimed;
+    uint32 claimCount;
     uint32 claimedAt;
     bool exist;
     bool refunded;
@@ -122,16 +125,17 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo {
 
   struct ClaimInfo {
     uint256 amount;
+    bool canClaim;
     uint256 claimed;
+    uint32 claimCount;
     uint32 claimedAt;
     bool exist;
-    bool refunded;
-    bool canClaim;
     uint256 available;
     uint256 remain;
     uint256 nextAvailable;
     uint32 nextClaimAt;
     bool canRefund;
+    bool refunded;
   }
 
   event Claim(address indexed account, uint256 amount);
@@ -172,6 +176,15 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo {
 
   function getContractVersion() external pure returns (string memory) {
     return VERSION;
+  }
+
+  //IAccountInfo implementation
+  function getAccountCount() public view returns (uint32) {
+    return (uint32)(_accountAddresses.length);
+  }
+
+  function getAccountByIndex(uint32 index) public view returns (address) {
+    return _accountAddresses[index];
   }
 
   //Custom
@@ -238,6 +251,10 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo {
     return (allocations[account].claimed == allocations[account].amount);
   }
 
+  function isAfterRefundCloseDate() public view returns (bool) {
+    return block.timestamp > refundCloseDate;
+  }
+
   function calculateClaimAt(address account, uint32 periodOffset) public view returns (uint32) {
     if (isAllocationFinished(account)) {
       return 0;
@@ -280,16 +297,17 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo {
     return
       ClaimInfo(
         allocation.amount,
+        canClaim_,
         allocation.claimed,
+        allocation.claimCount,
         allocation.claimedAt,
         allocation.exist,
-        allocation.refunded,
-        canClaim_,
         available,
         remain,
         nextAvailable,
         nextClaimAt,
-        canRefund_
+        canRefund_,
+        allocation.refunded
       );
   }
 
@@ -320,6 +338,7 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo {
 
     if (!allocation.exist) {
       allocationCount++;
+      _accountAddresses.push(account);
     }
 
     totalAllocated -= allocation.amount;
@@ -370,6 +389,7 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo {
     Allocation storage allocation = allocations[sender];
 
     allocation.claimed += claimAmount;
+    allocation.claimCount += 1;
     allocation.claimedAt = (uint32)(block.timestamp);
 
     totalReserved -= claimAmount;

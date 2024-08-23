@@ -14,7 +14,7 @@ import {
   SOURCE_NUMBER_DELIMITER,
   TARGET_NUMBER_DELIMITER,
 } from '../constants';
-import { AllocationRecord } from '../types';
+import { DepositAllocationRecord } from '../types';
 import { getExchangeDir, getFundsFileName } from '../utils';
 
 const CHUNK_SIZE = 100;
@@ -39,7 +39,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     const rawRecords = convertContentToArray2D(content, LINE_SEPARATOR, CELL_SEPARATOR);
     rawRecords.shift();
 
-    const allocationRecords: AllocationRecord[] = [];
+    const allocationRecords: DepositAllocationRecord[] = [];
 
     rawRecords.forEach((row) => {
       if (row.length < 2) {
@@ -49,7 +49,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
       const rawAddress = row[0];
       const rawAmount = row[7];
 
-      const allocationRecord: AllocationRecord = {
+      const allocationRecord: DepositAllocationRecord = {
         address: rawAddress,
         amount: toWeiWithFixed(
           Number(
@@ -87,7 +87,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
           }),
         );
 
-        const txAllocationRecords: AllocationRecord[] = [];
+        const txAllocationRecords: DepositAllocationRecord[] = [];
 
         for (const allocation of allocationChunk) {
           if (claimInfoRecords[allocation.address] === allocation.amount) {
