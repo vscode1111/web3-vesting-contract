@@ -48,14 +48,15 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
       refundCloseDate: printDate(await owner2SQRVesting.refundCloseDate()),
       //Custom
       balance: printToken(await owner2SQRVesting.getBalance(), decimals, tokenName),
-      allocationCount: Number(await owner2SQRVesting.getAllocationCount()),
+      allocationCount: Number(await owner2SQRVesting.allocationCount()),
+      refundCount: Number(await owner2SQRVesting.refundCount()),
       requiredAmount: printToken(
         await owner2SQRVesting.calculatedRequiredAmount(),
         decimals,
         tokenName,
       ),
       excessAmount: printToken(await owner2SQRVesting.calculateExcessAmount(), decimals, tokenName),
-      totalClaimed: printToken(await owner2SQRVesting.getTotalClaimed(), decimals, tokenName),
+      totalClaimed: printToken(await owner2SQRVesting.totalClaimed(), decimals, tokenName),
       passedPeriod: Number(await owner2SQRVesting.calculatePassedPeriod()),
       maxPeriod: Number(await owner2SQRVesting.calculateMaxPeriod()),
       finishDate: printDate(await owner2SQRVesting.calculateFinishDate()),

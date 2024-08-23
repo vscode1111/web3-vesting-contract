@@ -123,7 +123,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
       `Total allocations exist: ${totalExistCount}/${allocationLength}, new allocations: ${totalNewAllocationCount}`,
     );
 
-    const totalAllocatedInContract = await owner2SQRVesting.getTotalAllocated();
+    const totalAllocatedInContract = await owner2SQRVesting.totalAllocated();
     const diffTotalAllocated = totalAllocatedInFile - totalAllocatedInContract;
 
     console.log(

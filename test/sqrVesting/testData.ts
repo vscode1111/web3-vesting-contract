@@ -8,7 +8,10 @@ export const customError = {
   unlockPeriodPercentNotZero: 'UnlockPeriodPercentNotZero',
   arrayLengthsNotEqual: 'ArrayLengthsNotEqual',
   accountNotZeroAddress: 'AccountNotZeroAddress',
+  accountNotExist: 'AccountNotExist',
   contractMustHaveSufficientFunds: 'ContractMustHaveSufficientFunds',
   cantChangeOngoingVesting: 'CantChangeOngoingVesting',
   nothingToClaim: 'NothingToClaim',
+  alreadyClaimed: 'AlreadyClaimed',
+  tooLateToRefund: 'TooLateToRefund',
 };

@@ -14,7 +14,7 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo {
 
   //Variables, structs, errors, modifiers, events------------------------
 
-  string public constant VERSION = "2.0";
+  string public constant VERSION = "2.1";
 
   IERC20 public erc20Token;
   uint32 public startDate;
@@ -72,19 +72,27 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo {
     refundCloseDate = contractParams.refundCloseDate;
   }
 
-  uint32 private _allocationCounter;
-  uint256 private totalReserved;
-  uint256 private totalAllocated;
-  uint256 private totalClaimed;
+  uint256 public totalReserved;
+  uint256 public totalAllocated;
+  uint256 public totalClaimed;
+  uint32 public allocationCount;
+  uint32 public refundCount;
 
-  modifier alreadyRefundedChecker() {
+  modifier accountExist() {
+    if (!allocations[_msgSender()].exist) {
+      revert AccountNotExist();
+    }
+    _;
+  }
+
+  modifier alreadyRefunded() {
     if (allocations[_msgSender()].refunded) {
       revert AlreadyRefunded();
     }
     _;
   }
 
-  modifier refunUnavailableChecker() {
+  modifier refunUnavailable() {
     if (!availableRefund) {
       revert RefunUnavailable();
     }
@@ -143,6 +151,7 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo {
   error ArrayLengthsNotEqual();
   error AccountNotZeroAddress();
   error ContractMustHaveSufficientFunds();
+  error AccountNotExist();
   error NothingToClaim();
   error CantChangeOngoingVesting();
   error AlreadyRefunded();
@@ -225,10 +234,6 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo {
     return 0;
   }
 
-  function getAllocationCount() public view returns (uint32) {
-    return _allocationCounter;
-  }
-
   function isAllocationFinished(address account) public view returns (bool) {
     return (allocations[account].claimed == allocations[account].amount);
   }
@@ -288,14 +293,6 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo {
       );
   }
 
-  function getTotalAllocated() public view returns (uint256) {
-    return totalAllocated;
-  }
-
-  function getTotalClaimed() public view returns (uint256) {
-    return totalClaimed;
-  }
-
   function calculatedRequiredAmount() public view returns (uint256) {
     uint256 contractBalance = getBalance();
     if (totalReserved > contractBalance) {
@@ -322,7 +319,7 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo {
     Allocation storage allocation = allocations[account];
 
     if (!allocation.exist) {
-      _allocationCounter++;
+      allocationCount++;
     }
 
     totalAllocated -= allocation.amount;
@@ -358,7 +355,7 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo {
     }
   }
 
-  function claim() external nonReentrant alreadyRefundedChecker {
+  function claim() external nonReentrant accountExist alreadyRefunded {
     address sender = _msgSender();
     uint256 claimAmount = calculateClaimAmount(sender, 0);
 
@@ -384,7 +381,7 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo {
     emit Claim(sender, claimAmount);
   }
 
-  function refund() external refunUnavailableChecker alreadyRefundedChecker {
+  function refund() external refunUnavailable alreadyRefunded {
     if ((uint32)(block.timestamp) < refundStartDate) {
       revert TooEarlyToRefund();
     }
@@ -404,6 +401,8 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo {
 
     _setAllocation(sender, 0);
 
+    refundCount++;
+
     emit Refund(sender);
   }
 
@@ -412,7 +411,7 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo {
     emit SetAvailableRefund(_msgSender(), value);
   }
 
-  function setRefundStartDate(uint32 value) external onlyOwner refunUnavailableChecker {
+  function setRefundStartDate(uint32 value) external onlyOwner refunUnavailable {
     if (value < uint32(block.timestamp)) {
       revert RefundStartDateMustBeGreaterThanCurrentTime();
     }
@@ -425,7 +424,7 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo {
     emit SetRefundStartDate(_msgSender(), value);
   }
 
-  function setRefundCloseDate(uint32 value) external onlyOwner refunUnavailableChecker {
+  function setRefundCloseDate(uint32 value) external onlyOwner refunUnavailable {
     if (value < uint32(block.timestamp)) {
       revert RefundCloseDateMustBeGreaterThanCurrentTime();
     }

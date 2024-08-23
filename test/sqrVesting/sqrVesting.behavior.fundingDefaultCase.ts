@@ -38,13 +38,14 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
       expect(await getERC20TokenBalance(this, this.owner2Address)).eq(seedData.totalAccountBalance);
 
       expect(await this.owner2SQRVesting.getBalance()).eq(seedData.zero);
-      expect(await this.owner2SQRVesting.getTotalAllocated()).eq(seedData.zero);
+      expect(await this.owner2SQRVesting.totalAllocated()).eq(seedData.zero);
       expect(await this.owner2SQRVesting.calculatedRequiredAmount()).eq(seedData.zero);
       expect(await this.owner2SQRVesting.calculateExcessAmount()).eq(seedData.zero);
 
       expect(await this.owner2SQRVesting.calculatePassedPeriod()).eq(0);
 
-      expect(await this.owner2SQRVesting.getAllocationCount()).eq(0);
+      expect(await this.owner2SQRVesting.allocationCount()).eq(0);
+      expect(await this.owner2SQRVesting.refundCount()).eq(0);
       expect(await this.owner2SQRVesting.isAllocationFinished(this.user1Address)).eq(true);
 
       const claimInfo = await this.owner2SQRVesting.fetchClaimInfo(this.user1Address);
@@ -77,7 +78,7 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
     it('user1 tries to claim without allocation', async function () {
       await expect(this.user1SQRVesting.claim()).revertedWithCustomError(
         this.owner2SQRVesting,
-        customError.nothingToClaim,
+        customError.accountNotExist,
       );
     });
 
@@ -109,7 +110,7 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
         expect(await getERC20TokenBalance(this, this.sqrVestingAddress)).eq(
           seedData.companyVesting,
         );
-        expect(await this.owner2SQRVesting.getTotalAllocated()).eq(seedData.zero);
+        expect(await this.owner2SQRVesting.totalAllocated()).eq(seedData.zero);
         expect(await this.owner2SQRVesting.calculatedRequiredAmount()).eq(seedData.zero);
         expect(await this.owner2SQRVesting.calculateExcessAmount()).eq(seedData.companyVesting);
         expect(await this.owner2SQRVesting.getBalance()).eq(seedData.companyVesting);
@@ -247,13 +248,13 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
         expect(await getERC20TokenBalance(this, this.user3Address)).eq(contractAmount);
       });
 
-      describe('set first allocation', () => {
+      describe('user1 got allocation', () => {
         beforeEach(async function () {
           await this.owner2SQRVesting.setAllocation(this.user1Address, seedData.allocation1);
         });
 
         it(INITIAL_POSITIVE_CHECK_TEST_TITLE, async function () {
-          expect(await this.owner2SQRVesting.getTotalAllocated()).eq(seedData.allocation1);
+          expect(await this.owner2SQRVesting.totalAllocated()).eq(seedData.allocation1);
           expect(await this.owner2SQRVesting.calculatedRequiredAmount()).eq(seedData.zero);
           expect(await this.owner2SQRVesting.calculateExcessAmount()).eq(
             seedData.companyVesting - seedData.allocation1,
@@ -261,7 +262,8 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
 
           expect(await this.owner2SQRVesting.calculatePassedPeriod()).eq(0);
 
-          expect(await this.owner2SQRVesting.getAllocationCount()).eq(1);
+          expect(await this.owner2SQRVesting.allocationCount()).eq(1);
+          expect(await this.owner2SQRVesting.refundCount()).eq(0);
           expect(await this.owner2SQRVesting.isAllocationFinished(this.user1Address)).eq(false);
 
           const claimInfo = await this.owner2SQRVesting.fetchClaimInfo(this.user1Address);
@@ -297,41 +299,45 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
           const allocation = seedData.allocation1 * BigInt(2);
           await this.owner2SQRVesting.setAllocation(this.user1Address, allocation);
 
-          expect(await this.owner2SQRVesting.getTotalAllocated()).eq(allocation);
+          expect(await this.owner2SQRVesting.totalAllocated()).eq(allocation);
           expect(await this.owner2SQRVesting.calculatedRequiredAmount()).eq(seedData.zero);
           expect(await this.owner2SQRVesting.calculateExcessAmount()).eq(
             seedData.companyVesting - allocation,
           );
-          expect(await this.owner2SQRVesting.getAllocationCount()).eq(1);
+          expect(await this.owner2SQRVesting.allocationCount()).eq(1);
+          expect(await this.owner2SQRVesting.refundCount()).eq(0);
         });
 
         it('owner2 overridden first allocation to smaller one', async function () {
           const allocation = seedData.allocation1 / BigInt(2);
           await this.owner2SQRVesting.setAllocation(this.user1Address, allocation);
 
-          expect(await this.owner2SQRVesting.getTotalAllocated()).eq(allocation);
+          expect(await this.owner2SQRVesting.totalAllocated()).eq(allocation);
           expect(await this.owner2SQRVesting.calculatedRequiredAmount()).eq(seedData.zero);
           expect(await this.owner2SQRVesting.calculateExcessAmount()).eq(
             seedData.companyVesting - allocation,
           );
-          expect(await this.owner2SQRVesting.getAllocationCount()).eq(1);
+          expect(await this.owner2SQRVesting.allocationCount()).eq(1);
+          expect(await this.owner2SQRVesting.refundCount()).eq(0);
         });
 
         it('owner2 overridden first allocation to zero and init one', async function () {
           await this.owner2SQRVesting.setAllocation(this.user1Address, seedData.zero);
 
-          expect(await this.owner2SQRVesting.getTotalAllocated()).eq(seedData.zero);
+          expect(await this.owner2SQRVesting.totalAllocated()).eq(seedData.zero);
           expect(await this.owner2SQRVesting.calculatedRequiredAmount()).eq(seedData.zero);
           expect(await this.owner2SQRVesting.calculateExcessAmount()).eq(seedData.companyVesting);
-          expect(await this.owner2SQRVesting.getAllocationCount()).eq(1);
+          expect(await this.owner2SQRVesting.allocationCount()).eq(1);
+          expect(await this.owner2SQRVesting.refundCount()).eq(0);
 
           await this.owner2SQRVesting.setAllocation(this.user1Address, seedData.allocation1);
-          expect(await this.owner2SQRVesting.getTotalAllocated()).eq(seedData.allocation1);
+          expect(await this.owner2SQRVesting.totalAllocated()).eq(seedData.allocation1);
           expect(await this.owner2SQRVesting.calculatedRequiredAmount()).eq(seedData.zero);
           expect(await this.owner2SQRVesting.calculateExcessAmount()).eq(
             seedData.companyVesting - seedData.allocation1,
           );
-          expect(await this.owner2SQRVesting.getAllocationCount()).eq(1);
+          expect(await this.owner2SQRVesting.allocationCount()).eq(1);
+          expect(await this.owner2SQRVesting.refundCount()).eq(0);
         });
 
         describe('set time after start date', () => {
@@ -340,7 +346,7 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
           });
 
           it(INITIAL_POSITIVE_CHECK_TEST_TITLE, async function () {
-            expect(await this.owner2SQRVesting.getTotalAllocated()).eq(seedData.allocation1);
+            expect(await this.owner2SQRVesting.totalAllocated()).eq(seedData.allocation1);
             expect(await this.owner2SQRVesting.calculatedRequiredAmount()).eq(seedData.zero);
             expect(await this.owner2SQRVesting.calculateExcessAmount()).eq(
               seedData.companyVesting - seedData.allocation1,
@@ -348,7 +354,8 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
 
             expect(await this.owner2SQRVesting.calculatePassedPeriod()).eq(0);
 
-            expect(await this.owner2SQRVesting.getAllocationCount()).eq(1);
+            expect(await this.owner2SQRVesting.allocationCount()).eq(1);
+            expect(await this.owner2SQRVesting.refundCount()).eq(0);
             expect(await this.owner2SQRVesting.isAllocationFinished(this.user1Address)).eq(false);
 
             const claimInfo = await this.owner2SQRVesting.fetchClaimInfo(this.user1Address);
@@ -414,7 +421,7 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
 
               expect(await this.owner2SQRVesting.calculatePassedPeriod()).eq(0);
 
-              expect(await this.owner2SQRVesting.getTotalAllocated()).eq(seedData.allocation1);
+              expect(await this.owner2SQRVesting.totalAllocated()).eq(seedData.allocation1);
               expect(await this.owner2SQRVesting.calculatedRequiredAmount()).eq(seedData.zero);
               expect(await this.owner2SQRVesting.calculateExcessAmount()).eq(
                 seedData.companyVesting - seedData.allocation1,
@@ -429,7 +436,8 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
               );
               expect(await getERC20TokenBalance(this, this.user1Address)).eq(unlockAllocation);
 
-              expect(await this.owner2SQRVesting.getAllocationCount()).eq(1);
+              expect(await this.owner2SQRVesting.allocationCount()).eq(1);
+              expect(await this.owner2SQRVesting.refundCount()).eq(0);
               expect(await this.owner2SQRVesting.isAllocationFinished(this.user1Address)).eq(false);
 
               const claimInfo = await this.owner2SQRVesting.fetchClaimInfo(this.user1Address);
@@ -493,6 +501,22 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
               );
             });
 
+            it('user1 tries to refund when called claim previously', async function () {
+              await expect(this.user1SQRVesting.refund()).revertedWithCustomError(
+                this.owner2SQRVesting,
+                customError.alreadyClaimed,
+              );
+            });
+
+            it('user1 tries to refund when called claim previously', async function () {
+              await time.increaseTo(contractConfig.refundCloseDate);
+
+              await expect(this.user1SQRVesting.refund()).revertedWithCustomError(
+                this.owner2SQRVesting,
+                customError.tooLateToRefund,
+              );
+            });
+
             describe('moved time after cliff period', () => {
               beforeEach(async function () {
                 await time.increaseTo(contractConfig.startDate + contractConfig.cliffPeriod);
@@ -521,7 +545,7 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
 
                   expect(await this.owner2SQRVesting.calculatePassedPeriod()).eq(1);
 
-                  expect(await this.owner2SQRVesting.getTotalAllocated()).eq(seedData.allocation1);
+                  expect(await this.owner2SQRVesting.totalAllocated()).eq(seedData.allocation1);
                   expect(await this.owner2SQRVesting.calculatedRequiredAmount()).eq(seedData.zero);
                   expect(await this.owner2SQRVesting.calculateExcessAmount()).eq(
                     seedData.companyVesting - seedData.allocation1,
@@ -537,7 +561,8 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
 
                   expect(await getERC20TokenBalance(this, this.user1Address)).eq(unlockAllocation);
 
-                  expect(await this.owner2SQRVesting.getAllocationCount()).eq(1);
+                  expect(await this.owner2SQRVesting.allocationCount()).eq(1);
+                  expect(await this.owner2SQRVesting.refundCount()).eq(0);
                   expect(await this.owner2SQRVesting.isAllocationFinished(this.user1Address)).eq(
                     false,
                   );
@@ -599,9 +624,7 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
 
                     expect(await this.owner2SQRVesting.calculatePassedPeriod()).eq(2);
 
-                    expect(await this.owner2SQRVesting.getTotalAllocated()).eq(
-                      seedData.allocation1,
-                    );
+                    expect(await this.owner2SQRVesting.totalAllocated()).eq(seedData.allocation1);
                     expect(await this.owner2SQRVesting.calculatedRequiredAmount()).eq(
                       seedData.zero,
                     );
@@ -623,7 +646,8 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
                       unlockAllocation,
                     );
 
-                    expect(await this.owner2SQRVesting.getAllocationCount()).eq(1);
+                    expect(await this.owner2SQRVesting.allocationCount()).eq(1);
+                    expect(await this.owner2SQRVesting.refundCount()).eq(0);
                     expect(await this.owner2SQRVesting.isAllocationFinished(this.user1Address)).eq(
                       false,
                     );
@@ -680,9 +704,7 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
                     it(INITIAL_POSITIVE_CHECK_TEST_TITLE, async function () {
                       expect(await this.owner2SQRVesting.calculatePassedPeriod()).eq(10);
 
-                      expect(await this.owner2SQRVesting.getTotalAllocated()).eq(
-                        seedData.allocation1,
-                      );
+                      expect(await this.owner2SQRVesting.totalAllocated()).eq(seedData.allocation1);
                       expect(await this.owner2SQRVesting.calculatedRequiredAmount()).eq(
                         seedData.zero,
                       );
@@ -701,7 +723,8 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
                         seedData.allocation1,
                       );
 
-                      expect(await this.owner2SQRVesting.getAllocationCount()).eq(1);
+                      expect(await this.owner2SQRVesting.allocationCount()).eq(1);
+                      expect(await this.owner2SQRVesting.refundCount()).eq(0);
                       expect(
                         await this.owner2SQRVesting.isAllocationFinished(this.user1Address),
                       ).eq(true);
@@ -797,7 +820,7 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
             });
 
             it(INITIAL_POSITIVE_CHECK_TEST_TITLE, async function () {
-              expect(await this.owner2SQRVesting.getTotalAllocated()).eq(seedData.allocation1);
+              expect(await this.owner2SQRVesting.totalAllocated()).eq(seedData.allocation1);
               expect(await this.owner2SQRVesting.calculatedRequiredAmount()).eq(seedData.zero);
               expect(await this.owner2SQRVesting.calculateExcessAmount()).eq(
                 seedData.companyVesting - seedData.allocation1,
@@ -805,7 +828,8 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
 
               expect(await this.owner2SQRVesting.calculatePassedPeriod()).eq(0);
 
-              expect(await this.owner2SQRVesting.getAllocationCount()).eq(1);
+              expect(await this.owner2SQRVesting.allocationCount()).eq(1);
+              expect(await this.owner2SQRVesting.refundCount()).eq(0);
               expect(await this.owner2SQRVesting.isAllocationFinished(this.user1Address)).eq(false);
 
               const claimInfo = await this.owner2SQRVesting.fetchClaimInfo(this.user1Address);
@@ -836,6 +860,109 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
                 calculateAllocation(seedData.allocation1, contractConfig.firstUnlockPercent),
               );
               expect(nextClaimAt).closeTo(contractConfig.startDate, seedData.timeDelta);
+              expect(canRefund).eq(false);
+            });
+          });
+        });
+      });
+
+      describe.only('user2 refund case', () => {
+        beforeEach(async function () {});
+
+        it(INITIAL_POSITIVE_CHECK_TEST_TITLE, async function () {
+          const claimInfo = await this.owner2SQRVesting.fetchClaimInfo(this.user2Address);
+          const {
+            amount,
+            claimed,
+            claimedAt,
+            exist,
+            refunded,
+            canClaim,
+            available,
+            remain,
+            nextAvailable,
+            nextClaimAt,
+            canRefund,
+          } = claimInfo;
+          expect(amount).eq(seedData.zero);
+          expect(claimed).eq(seedData.zero);
+          expect(claimedAt).eq(seedData.zero);
+          expect(exist).eq(false);
+          expect(refunded).eq(false);
+          expect(canClaim).eq(false);
+          expect(available).eq(seedData.zero);
+          expect(remain).eq(seedData.zero);
+          expect(nextAvailable).eq(seedData.zero);
+          expect(nextClaimAt).eq(0);
+          expect(canRefund).eq(false);
+        });
+
+        describe('user1 got allocation', () => {
+          beforeEach(async function () {
+            await this.owner2SQRVesting.setAllocation(this.user2Address, seedData.allocation2);
+          });
+
+          it(INITIAL_POSITIVE_CHECK_TEST_TITLE, async function () {
+            const claimInfo = await this.owner2SQRVesting.fetchClaimInfo(this.user2Address);
+            const {
+              amount,
+              claimed,
+              claimedAt,
+              exist,
+              refunded,
+              canClaim,
+              available,
+              remain,
+              nextAvailable,
+              nextClaimAt,
+              canRefund,
+            } = claimInfo;
+            expect(amount).eq(seedData.allocation2);
+            expect(claimed).eq(seedData.zero);
+            expect(claimedAt).eq(seedData.zero);
+            expect(exist).eq(true);
+            expect(refunded).eq(false);
+            expect(canClaim).eq(false);
+            expect(available).eq(seedData.zero);
+            expect(remain).eq(seedData.allocation2);
+            expect(nextAvailable).eq(
+              calculateAllocation(seedData.allocation2, contractConfig.firstUnlockPercent),
+            );
+            expect(nextClaimAt).closeTo(contractConfig.startDate, seedData.timeDelta);
+            expect(canRefund).eq(false);
+          });
+
+          describe('set time to refundStartDate and user2 refunded', () => {
+            beforeEach(async function () {
+              await time.increaseTo(contractConfig.refundStartDate);
+              await this.user2SQRVesting.refund();
+            });
+
+            it.only(INITIAL_POSITIVE_CHECK_TEST_TITLE, async function () {
+              const claimInfo = await this.owner2SQRVesting.fetchClaimInfo(this.user2Address);
+              const {
+                amount,
+                claimed,
+                claimedAt,
+                exist,
+                refunded,
+                canClaim,
+                available,
+                remain,
+                nextAvailable,
+                nextClaimAt,
+                canRefund,
+              } = claimInfo;
+              expect(amount).eq(seedData.zero);
+              expect(claimed).eq(seedData.zero);
+              expect(claimedAt).eq(seedData.zero);
+              expect(exist).eq(true);
+              expect(refunded).eq(true);
+              expect(canClaim).eq(false);
+              expect(available).eq(seedData.zero);
+              expect(remain).eq(seedData.zero);
+              expect(nextAvailable).eq(seedData.zero);
+              expect(nextClaimAt).eq(0);
               expect(canRefund).eq(false);
             });
           });
