@@ -54,6 +54,8 @@ export const CONTRACTS: Record<CONTRACT_LIST, DeployNetworks> = {
     // bsc: '0xbF7FF12786b9CE22Fc8Ee053843aF520a9CAF833', //Main - availableRefund
     // bsc: '0xcEE080Cc66ebFC2F80564E071F2E17DFf30D0937', //Main - availableRefund - v2.1
     bsc: '0xaBE63311f7c16aa523f5617618244da37FDe67aA', //Main - availableRefund - v2.2
+    // bsc: '0x2243f8e4f5d5055254cc8c5637e281167be83188', //Main - v1
+    // bsc: '0xd5c2409337e996b65f0703889ff91897bfe35531', //Main - v1 - Denis
 
     // Prod
     // bsc: '0x9348A50dB866EF8e47037aE20bB03a8Fbf2c875D', //Prod - 1.5

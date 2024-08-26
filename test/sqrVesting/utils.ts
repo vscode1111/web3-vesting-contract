@@ -1,7 +1,7 @@
 import { time } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import dayjs, { Dayjs } from 'dayjs';
-import { TransactionReceipt } from 'ethers';
+import { Numeric, TransactionReceipt } from 'ethers';
 import { Context } from 'mocha';
 import { ContractConfig, seedData } from '~seeds';
 import { ContextBase } from '~types';
@@ -72,10 +72,10 @@ export async function loadSQRVestingFixture(
   await checkTotalSQRBalance(that);
 }
 
-export function calculateClaimAt(contractConfig: ContractConfig, passedPeriod = 0) {
+export function calculateClaimAt(contractConfig: ContractConfig, passedPeriod: Numeric = 0) {
   return (
     contractConfig.startDate +
     contractConfig.cliffPeriod +
-    passedPeriod * contractConfig.unlockPeriod
+    Number(passedPeriod) * contractConfig.unlockPeriod
   );
 }

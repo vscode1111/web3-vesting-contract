@@ -1,14 +1,14 @@
 {
   "name": "sqr-vesting-contract",
   "description": "Solidity smart contracts for SQR vesting functionality",
-  "version": "0.0.39",
+  "version": "0.0.40",
   "scripts": {
     "clean": "shx rm -rf ./dist ./artifacts ./cache ./coverage ./typechain-types ./coverage.json && yarn typechain",
     "commit": "git-cz",
     "build": "cross-env TS_NODE_TRANSPILE_ONLY=true hardhat compile && yarn typechain && tsc",
     "verify": "hardhat verify",
     "slither": "slither contracts/SQRVesting.sol --solc-remaps '@openzeppelin=node_modules/@openzeppelin'",
-    "coverage": "cross-env COVERAGE=true cross-env ENV=test hardhat coverage --solcoverjs ./.solcover.js --temp artifacts --testfiles \"test/**/*.ts\" --show-stack-traces && pnpm typechain",
+    "coverage": "cross-env COVERAGE=true cross-env ENV=test hardhat coverage --solcoverjs ./.solcover.js --temp artifacts --testfiles \"test/**/*.ts\" --show-stack-traces",
     "deploy": "hardhat deploy",
     "deploy:accounts": "hardhat deploy --tags accounts",
     "deploy:deploy": "hardhat deploy --tags SQRVesting:deploy",

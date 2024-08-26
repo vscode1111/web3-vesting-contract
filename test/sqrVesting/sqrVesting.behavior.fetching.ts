@@ -21,6 +21,7 @@ export function shouldBehaveCorrectFetching(): void {
       expect(await this.ownerSQRVesting.unlockPeriodPercent()).eq(
         contractConfig.unlockPeriodPercent,
       );
+      expect(await this.ownerSQRVesting.isAfterRefundCloseDate()).eq(false);
     });
 
     it('should be correct calculations of methods', async function () {

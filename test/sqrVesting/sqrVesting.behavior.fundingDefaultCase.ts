@@ -939,15 +939,17 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
             expect(canRefund).eq(false);
           });
 
-          describe('user1 got allocation', () => {
+          describe('user2 and user3 got allocation', () => {
             beforeEach(async function () {
               await this.owner2SQRVesting.setAllocation(this.user2Address, seedData.allocation2);
+              await this.owner2SQRVesting.setAllocation(this.user3Address, seedData.allocation3);
             });
 
             it(INITIAL_POSITIVE_CHECK_TEST_TITLE, async function () {
-              expect(await this.owner2SQRVesting.getAccountCount()).eq(2);
+              expect(await this.owner2SQRVesting.getAccountCount()).eq(3);
               expect(await this.owner2SQRVesting.getAccountByIndex(0)).eq(this.user1Address);
               expect(await this.owner2SQRVesting.getAccountByIndex(1)).eq(this.user2Address);
+              expect(await this.owner2SQRVesting.getAccountByIndex(2)).eq(this.user3Address);
 
               const claimInfo = await this.owner2SQRVesting.fetchClaimInfo(this.user2Address);
               const {
@@ -978,38 +980,71 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
               expect(canRefund).eq(false);
             });
 
-            describe('set time to refundStartDate and user2 refunded', () => {
+            describe('set time to refund start date and user2 refunded', () => {
               beforeEach(async function () {
                 await time.increaseTo(contractConfig.refundStartDate);
                 await this.user2SQRVesting.refund();
               });
 
               it(INITIAL_POSITIVE_CHECK_TEST_TITLE, async function () {
-                const claimInfo = await this.owner2SQRVesting.fetchClaimInfo(this.user2Address);
-                const {
-                  amount,
-                  claimed,
-                  claimedAt,
-                  exist,
-                  refunded,
-                  canClaim,
-                  available,
-                  remain,
-                  nextAvailable,
-                  nextClaimAt,
-                  canRefund,
-                } = claimInfo;
-                expect(amount).eq(seedData.zero);
-                expect(claimed).eq(seedData.zero);
-                expect(claimedAt).eq(seedData.zero);
-                expect(exist).eq(true);
-                expect(refunded).eq(true);
-                expect(canClaim).eq(false);
-                expect(available).eq(seedData.zero);
-                expect(remain).eq(seedData.zero);
-                expect(nextAvailable).eq(seedData.zero);
-                expect(nextClaimAt).eq(0);
-                expect(canRefund).eq(false);
+                expect(await this.ownerSQRVesting.isAfterRefundCloseDate()).eq(false);
+
+                const claimInfo2 = await this.owner2SQRVesting.fetchClaimInfo(this.user2Address);
+                expect(claimInfo2.amount).eq(seedData.zero);
+                expect(claimInfo2.claimed).eq(seedData.zero);
+                expect(claimInfo2.claimedAt).eq(seedData.zero);
+                expect(claimInfo2.exist).eq(true);
+                expect(claimInfo2.refunded).eq(true);
+                expect(claimInfo2.canClaim).eq(false);
+                expect(claimInfo2.available).eq(seedData.zero);
+                expect(claimInfo2.remain).eq(seedData.zero);
+                expect(claimInfo2.nextAvailable).eq(seedData.zero);
+                expect(claimInfo2.nextClaimAt).eq(0);
+                expect(claimInfo2.canRefund).eq(false);
+
+                const claimInfo3 = await this.owner2SQRVesting.fetchClaimInfo(this.user3Address);
+                expect(claimInfo3.amount).eq(seedData.allocation3);
+                expect(claimInfo3.claimed).eq(seedData.zero);
+                expect(claimInfo3.claimedAt).eq(seedData.zero);
+                expect(claimInfo3.exist).eq(true);
+                expect(claimInfo3.refunded).eq(false);
+                expect(claimInfo3.canClaim).eq(true);
+                expect(claimInfo3.available).eq(
+                  calculateAllocation(seedData.allocation3, contractConfig.firstUnlockPercent),
+                );
+                expect(claimInfo3.remain).eq(seedData.allocation3);
+                expect(claimInfo3.nextAvailable).eq(
+                  calculateAllocation(seedData.allocation3, contractConfig.firstUnlockPercent),
+                );
+                expect(claimInfo3.canRefund).eq(true);
+              });
+
+              describe('set time to refund close date and user2 refunded', () => {
+                beforeEach(async function () {
+                  await time.increaseTo(
+                    addSecondsToUnixTime(contractConfig.refundCloseDate, seedData.timeShift),
+                  );
+                });
+
+                it(INITIAL_POSITIVE_CHECK_TEST_TITLE, async function () {
+                  expect(await this.ownerSQRVesting.isAfterRefundCloseDate()).eq(true);
+
+                  const claimInfo3 = await this.owner2SQRVesting.fetchClaimInfo(this.user3Address);
+                  expect(claimInfo3.amount).eq(seedData.allocation3);
+                  expect(claimInfo3.claimed).eq(seedData.zero);
+                  expect(claimInfo3.claimedAt).eq(seedData.zero);
+                  expect(claimInfo3.exist).eq(true);
+                  expect(claimInfo3.refunded).eq(false);
+                  expect(claimInfo3.canClaim).eq(true);
+                  expect(claimInfo3.available).eq(
+                    calculateAllocation(seedData.allocation3, contractConfig.firstUnlockPercent),
+                  );
+                  expect(claimInfo3.remain).eq(seedData.allocation3);
+                  expect(claimInfo3.nextAvailable).eq(
+                    calculateAllocation(seedData.allocation3, contractConfig.firstUnlockPercent),
+                  );
+                  expect(claimInfo3.canRefund).eq(false);
+                });
               });
             });
           });
