@@ -15,7 +15,7 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo, IAccountInfo {
 
   //Variables, structs, errors, modifiers, events------------------------
 
-  string public constant VERSION = "2.3";
+  string public constant VERSION = "2.4";
 
   IERC20 public erc20Token;
   uint32 public startDate;
@@ -125,18 +125,17 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo, IAccountInfo {
 
   struct ClaimInfo {
     uint256 amount;
+    bool canClaim;
     uint256 claimed;
+    uint32 claimCount;
     uint32 claimedAt;
     bool exist;
-    bool canClaim;
     uint256 available;
     uint256 remain;
     uint256 nextAvailable;
     uint32 nextClaimAt;
-    //v2
     bool canRefund;
     bool refunded;
-    uint32 claimCount;
   }
 
   event Claim(address indexed account, uint256 amount);
@@ -298,18 +297,17 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo, IAccountInfo {
     return
       ClaimInfo(
         allocation.amount,
+        canClaim_,
         allocation.claimed,
+        allocation.claimCount,
         allocation.claimedAt,
         allocation.exist,
-        canClaim_,
         available,
         remain,
         nextAvailable,
         nextClaimAt,
-        //v2
         canRefund_,
-        allocation.refunded,
-        allocation.claimCount
+        allocation.refunded
       );
   }
 
