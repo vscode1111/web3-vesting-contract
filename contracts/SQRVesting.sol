@@ -15,7 +15,7 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo, IAccountInfo {
 
   //Variables, structs, errors, modifiers, events------------------------
 
-  string public constant VERSION = "2.4";
+  string public constant VERSION = "2.5";
 
   IERC20 public erc20Token;
   uint32 public startDate;
@@ -431,7 +431,7 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo, IAccountInfo {
     emit SetAvailableRefund(_msgSender(), value);
   }
 
-  function setRefundStartDate(uint32 value) external onlyOwner refunUnavailable {
+  function setRefundStartDate(uint32 value) external onlyOwner {
     if (value < uint32(block.timestamp)) {
       revert RefundStartDateMustBeGreaterThanCurrentTime();
     }
@@ -444,7 +444,7 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo, IAccountInfo {
     emit SetRefundStartDate(_msgSender(), value);
   }
 
-  function setRefundCloseDate(uint32 value) external onlyOwner refunUnavailable {
+  function setRefundCloseDate(uint32 value) external onlyOwner {
     if (value < uint32(block.timestamp)) {
       revert RefundCloseDateMustBeGreaterThanCurrentTime();
     }
@@ -457,7 +457,7 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo, IAccountInfo {
     emit SetRefundCloseDate(_msgSender(), value);
   }
 
-  function withdrawExcessAmount() external nonReentrant onlyOwner {
+  function withdrawExcessAmount() external onlyOwner {
     uint256 amount = calculateExcessAmount();
     address to = owner();
     erc20Token.safeTransfer(to, amount);

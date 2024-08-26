@@ -3,6 +3,8 @@ import {
   ForceWithdrawEvent,
   RefundEvent,
   SetAllocationEvent,
+  SetAvailableRefundEvent,
+  SetRefundStartDateEvent,
   WithdrawExcessAmountEvent,
 } from '~typechain-types/contracts/SQRVesting';
 import { ContextBase } from '~types';
@@ -28,3 +30,9 @@ export type WithdrawExcessAmountEventArgs = WithdrawExcessAmountEvent.Event &
   EventArgs<[string, number]>;
 
 export type ForceWithdrawEventArgs = ForceWithdrawEvent.Event & EventArgs<[string, string, number]>;
+
+export type SetAvailableRefundEventArgs = SetAvailableRefundEvent.Event &
+  EventArgs<[string, number]>;
+
+export type SetRefundStartDateEventArgs = SetRefundStartDateEvent.Event &
+  EventArgs<[string, number]>;

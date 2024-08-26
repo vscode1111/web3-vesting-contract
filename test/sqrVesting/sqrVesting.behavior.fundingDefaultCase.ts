@@ -1,8 +1,7 @@
 import { time } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import { ZeroAddress } from 'ethers';
-import { sum } from 'lodash';
-import { DAYS, INITIAL_POSITIVE_CHECK_TEST_TITLE } from '~common';
+import { DAYS, INITIAL_POSITIVE_CHECK_TEST_TITLE, toUnixTime } from '~common';
 import { waitTx } from '~common-contract';
 import { contractConfig, seedData } from '~seeds';
 import { addSecondsToUnixTime, calculateAllocation } from '~utils';
@@ -12,6 +11,8 @@ import {
   ForceWithdrawEventArgs,
   RefundEventArgs,
   SetAllocationEventArgs,
+  SetAvailableRefundEventArgs,
+  SetRefundStartDateEventArgs,
   WithdrawExcessAmountEventArgs,
 } from './types';
 import {
@@ -83,7 +84,7 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
       );
     });
 
-    it('user1 tries to claim without allocation', async function () {
+    it('user1 tries to claim without contract funds', async function () {
       await this.owner2SQRVesting.setAllocation(this.user1Address, seedData.allocation1);
       await time.increaseTo(contractConfig.startDate);
       await expect(this.user1SQRVesting.claim()).revertedWithCustomError(
@@ -92,14 +93,86 @@ export function shouldBehaveCorrectFundingDefaultCase(): void {
       );
     });
 
-    it('owner2 set allocations and check required amount of tokens', async function () {
-      const { allocation1, allocation2, allocation3 } = seedData;
-      const amounts = [allocation1, allocation2, allocation3];
-      await this.owner2SQRVesting.setAllocations(
-        [this.user1Address, this.user2Address, this.user3Address],
-        amounts,
+    it('user1 tries to set available refund without permission', async function () {
+      await expect(this.user1SQRVesting.setAvailableRefund(true)).revertedWithCustomError(
+        this.owner2SQRVesting,
+        customError.ownableUnauthorizedAccount,
       );
-      expect(await this.owner2SQRVesting.calculatedRequiredAmount()).eq(sum(amounts));
+    });
+
+    it('owner2 is allowed to set available refund (check event)', async function () {
+      const receipt = await waitTx(this.owner2SQRVesting.setAvailableRefund(true));
+      const eventLog = findEvent<SetAvailableRefundEventArgs>(receipt);
+      expect(eventLog).not.undefined;
+      const [account, value] = eventLog?.args;
+      expect(account).eq(this.owner2);
+      expect(value).eq(true);
+    });
+
+    it('user1 tries to set refund start date without permission', async function () {
+      await expect(
+        this.user1SQRVesting.setRefundStartDate(toUnixTime(seedData.now.toDate())),
+      ).revertedWithCustomError(this.owner2SQRVesting, customError.ownableUnauthorizedAccount);
+    });
+
+    it('owner2 tries to set refund start date by current one', async function () {
+      await expect(
+        this.owner2SQRVesting.setRefundStartDate(
+          addSecondsToUnixTime(seedData.now, -seedData.timeShift),
+        ),
+      ).revertedWithCustomError(
+        this.owner2SQRVesting,
+        customError.refundStartDateMustBeGreaterThanCurrentTime,
+      );
+    });
+
+    it('owner2 tries to set refund start date after close one', async function () {
+      await expect(
+        this.owner2SQRVesting.setRefundStartDate(
+          addSecondsToUnixTime(contractConfig.refundCloseDate, seedData.timeShift),
+        ),
+      ).revertedWithCustomError(
+        this.owner2SQRVesting,
+        customError.refundStartDateMustBeLessThanRefundCloseDate,
+      );
+    });
+
+    it('owner2 is allowed to set refund start date refund (check event)', async function () {
+      const { refundStartDate } = contractConfig;
+      const receipt = await waitTx(this.owner2SQRVesting.setRefundStartDate(refundStartDate));
+      const eventLog = findEvent<SetRefundStartDateEventArgs>(receipt);
+      expect(eventLog).not.undefined;
+      const [account, value] = eventLog?.args;
+      expect(account).eq(this.owner2Address);
+      expect(value).eq(refundStartDate);
+    });
+
+    it('user1 tries to set refund close date without permission', async function () {
+      await expect(
+        this.user1SQRVesting.setRefundCloseDate(toUnixTime(seedData.now.toDate())),
+      ).revertedWithCustomError(this.owner2SQRVesting, customError.ownableUnauthorizedAccount);
+    });
+
+    it('owner2 tries to set refund close date by current one', async function () {
+      await expect(
+        this.owner2SQRVesting.setRefundCloseDate(
+          addSecondsToUnixTime(seedData.now, -seedData.timeShift),
+        ),
+      ).revertedWithCustomError(
+        this.owner2SQRVesting,
+        customError.refundCloseDateMustBeGreaterThanCurrentTime,
+      );
+    });
+
+    it('owner2 tries to set refund close date before start one', async function () {
+      await expect(
+        this.owner2SQRVesting.setRefundCloseDate(
+          addSecondsToUnixTime(contractConfig.refundStartDate, -seedData.timeShift),
+        ),
+      ).revertedWithCustomError(
+        this.owner2SQRVesting,
+        customError.refundCloseDateMustBeGreaterThanRefundStartDate,
+      );
     });
 
     describe('contract has tokens for vesting', () => {

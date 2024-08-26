@@ -14,4 +14,9 @@ export const customError = {
   nothingToClaim: 'NothingToClaim',
   alreadyClaimed: 'AlreadyClaimed',
   tooLateToRefund: 'TooLateToRefund',
+  refundStartDateMustBeGreaterThanCurrentTime: 'RefundStartDateMustBeGreaterThanCurrentTime',
+  refundStartDateMustBeLessThanRefundCloseDate: 'RefundStartDateMustBeLessThanRefundCloseDate',
+  refundCloseDateMustBeGreaterThanCurrentTime: 'RefundCloseDateMustBeGreaterThanCurrentTime',
+  refundCloseDateMustBeGreaterThanRefundStartDate:
+    'RefundCloseDateMustBeGreaterThanRefundStartDate',
 };
