@@ -1,3 +1,4 @@
+import { time } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import { ZeroAddress } from 'ethers';
 import { ZERO } from '~constants';
@@ -13,9 +14,8 @@ export function shouldBehaveCorrectDeployment(): void {
     });
 
     it('owner tries to deploy with zero new owner address', async function () {
-      const users = await getUsers();
       await expect(
-        getSQRVestingContext(users, {
+        getSQRVestingContext(await getUsers(), {
           ...contractConfig,
           newOwner: ZeroAddress,
         }),
@@ -23,9 +23,8 @@ export function shouldBehaveCorrectDeployment(): void {
     });
 
     it('owner tries to deploy with zero ERC20 token address', async function () {
-      const users = await getUsers();
       await expect(
-        getSQRVestingContext(users, {
+        getSQRVestingContext(await getUsers(), {
           ...contractConfig,
           erc20Token: ZeroAddress,
         }),
@@ -33,9 +32,8 @@ export function shouldBehaveCorrectDeployment(): void {
     });
 
     it('owner tries to deploy with invalid first unlock percent', async function () {
-      const users = await getUsers();
       await expect(
-        getSQRVestingContext(users, {
+        getSQRVestingContext(await getUsers(), {
           ...contractConfig,
           firstUnlockPercent: calculatePercentForContract(101),
         }),
@@ -46,9 +44,8 @@ export function shouldBehaveCorrectDeployment(): void {
     });
 
     it('owner tries to deploy with invalid start date', async function () {
-      const users = await getUsers();
       await expect(
-        getSQRVestingContext(users, {
+        getSQRVestingContext(await getUsers(), {
           ...contractConfig,
           startDate: 1,
         }),
@@ -59,9 +56,8 @@ export function shouldBehaveCorrectDeployment(): void {
     });
 
     it('owner tries to deploy with zero unlock period', async function () {
-      const users = await getUsers();
       await expect(
-        getSQRVestingContext(users, {
+        getSQRVestingContext(await getUsers(), {
           ...contractConfig,
           unlockPeriod: 0,
         }),
@@ -69,13 +65,49 @@ export function shouldBehaveCorrectDeployment(): void {
     });
 
     it('owner tries to deploy with zero unlock period percent', async function () {
-      const users = await getUsers();
       await expect(
-        getSQRVestingContext(users, {
+        getSQRVestingContext(await getUsers(), {
           ...contractConfig,
           unlockPeriodPercent: ZERO,
         }),
       ).revertedWithCustomError(this.owner2SQRVesting, customError.unlockPeriodPercentNotZero);
+    });
+
+    it('owner tries to deploy with zero refund start date', async function () {
+      await expect(
+        getSQRVestingContext(await getUsers(), {
+          ...contractConfig,
+          refundStartDate: 0,
+        }),
+      ).revertedWithCustomError(
+        this.owner2SQRVesting,
+        customError.refundStartDateMustBeGreaterThanCurrentTime,
+      );
+    });
+
+    it('owner tries to deploy with zero refund close date', async function () {
+      await expect(
+        getSQRVestingContext(await getUsers(), {
+          ...contractConfig,
+          refundCloseDate: 0,
+        }),
+      ).revertedWithCustomError(
+        this.owner2SQRVesting,
+        customError.refundCloseDateMustBeGreaterThanRefundStartDate,
+      );
+    });
+
+    it('owner deployed with false availableRefund', async function () {
+      const { owner2SQRVesting, user1SQRVesting } = await getSQRVestingContext(await getUsers(), {
+        ...contractConfig,
+        availableRefund: false,
+      });
+      expect(await owner2SQRVesting.availableRefund()).eq(false);
+      await time.increaseTo(contractConfig.refundStartDate);
+      await expect(user1SQRVesting.refund()).revertedWithCustomError(
+        this.owner2SQRVesting,
+        customError.refundUnavailable,
+      );
     });
   });
 }

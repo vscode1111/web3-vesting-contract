@@ -9,28 +9,30 @@ export function printClaimInfo(
 ) {
   const {
     amount,
+    canRefund,
     claimed,
+    claimCount,
     claimedAt,
     exist,
     canClaim,
     available,
     remain,
-    nextClaimAt,
     nextAvailable,
-    canRefund,
+    nextClaimAt,
     refunded,
   } = claimInfo;
 
   return {
     amount: printToken(amount, decimals, tokenName),
+    canClaim,
     claimed: printToken(claimed, decimals, tokenName),
+    claimCount: Number(claimCount),
     claimedAt: printDate(claimedAt),
     exist,
-    canClaim,
     available: printToken(available, decimals, tokenName),
     remain: printToken(remain, decimals, tokenName),
-    nextClaimAt: printDate(nextClaimAt),
     nextAvailable: printToken(nextAvailable, decimals, tokenName),
+    nextClaimAt: printDate(nextClaimAt),
     canRefund,
     refunded,
   };

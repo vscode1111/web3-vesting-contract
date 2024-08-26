@@ -15,7 +15,7 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo, IAccountInfo {
 
   //Variables, structs, errors, modifiers, events------------------------
 
-  string public constant VERSION = "2.5";
+  string public constant VERSION = "2.6";
 
   IERC20 public erc20Token;
   uint32 public startDate;
@@ -94,13 +94,6 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo, IAccountInfo {
     _;
   }
 
-  modifier refunUnavailable() {
-    if (!availableRefund) {
-      revert RefunUnavailable();
-    }
-    _;
-  }
-
   struct ContractParams {
     address newOwner;
     address erc20Token;
@@ -164,7 +157,7 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo, IAccountInfo {
   error RefundStartDateMustBeLessThanRefundCloseDate();
   error RefundCloseDateMustBeGreaterThanCurrentTime();
   error RefundCloseDateMustBeGreaterThanRefundStartDate();
-  error RefunUnavailable();
+  error RefundUnavailable();
   error TooEarlyToRefund();
   error TooLateToRefund();
 
@@ -216,6 +209,7 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo, IAccountInfo {
     address account,
     uint32 periodOffset
   ) public view returns (uint256) {
+    // Before startDate
     if (block.timestamp < startDate && periodOffset == 0) {
       return 0;
     }
@@ -226,10 +220,9 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo, IAccountInfo {
     uint256 claimed = allocation.claimed;
     uint256 amount = allocation.amount;
 
-    if (block.timestamp < startDate + cliffPeriod) {
-      if (claimed == 0) {
-        return firstUnlockAmount;
-      }
+    // Before cliff and claim
+    if (block.timestamp < startDate + cliffPeriod && claimed == 0) {
+      return firstUnlockAmount;
     } else {
       uint256 claimAmount = ((calculatePassedPeriod() + periodOffset) *
         (amount * unlockPeriodPercent)) /
@@ -243,8 +236,6 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo, IAccountInfo {
 
       return claimAmount;
     }
-
-    return 0;
   }
 
   function isAllocationFinished(address account) public view returns (bool) {
@@ -401,7 +392,11 @@ contract SQRVesting is Ownable, ReentrancyGuard, IContractInfo, IAccountInfo {
     emit Claim(sender, claimAmount);
   }
 
-  function refund() external refunUnavailable alreadyRefunded {
+  function refund() external alreadyRefunded {
+    if (!availableRefund) {
+      revert RefundUnavailable();
+    }
+
     if ((uint32)(block.timestamp) < refundStartDate) {
       revert TooEarlyToRefund();
     }

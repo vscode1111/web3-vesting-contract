@@ -36,3 +36,6 @@ export type SetAvailableRefundEventArgs = SetAvailableRefundEvent.Event &
 
 export type SetRefundStartDateEventArgs = SetRefundStartDateEvent.Event &
   EventArgs<[string, number]>;
+
+export type SetRefundCloseDateEventArgs = SetRefundStartDateEvent.Event &
+  EventArgs<[string, number]>;

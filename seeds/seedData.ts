@@ -29,7 +29,7 @@ export const { address: tokenAddress, decimals: tokenDecimals } =
 
 const priceDiv = BigInt(1);
 export const now = dayjs();
-const startDate = now.add(5, 'minutes');
+const startDate = now.add(3, 'minutes');
 const refundStartDate = startDate.add(1, 'minutes');
 const refundCloseDate = startDate.add(10, 'minutes');
 
@@ -53,7 +53,7 @@ export const contractConfigDeployMap: Record<DeployType, Partial<ContractConfig>
     erc20Token: '0x8364a68c32E581332b962D88CdC8dBe8b3e0EE9c', //tSQR2
     cliffPeriod: 0,
     firstUnlockPercent: calculatePercentForContract(50),
-    unlockPeriod: 1 * MINUTES,
+    unlockPeriod: 5 * MINUTES,
     unlockPeriodPercent: calculatePercentForContract(0.001),
     availableRefund: true,
     refundStartDate: toUnixTime(startDate.toDate()),
@@ -69,7 +69,7 @@ export const contractConfigDeployMap: Record<DeployType, Partial<ContractConfig>
     unlockPeriodPercent: calculatePercentForContract(25),
   },
   prod: {
-    newOwner: MATAN_WALLET_COMMON, //Matan
+    newOwner: MATAN_WALLET_COMMON,
     // newOwner: '0x627Ab3fbC3979158f451347aeA288B0A3A47E1EF', //s-owner2
     erc20Token: '0x2B72867c32CF673F7b02d208B26889fEd353B1f8', //SQR
     // startDate: toUnixTime(now.add(5, 'minutes').toDate()),
