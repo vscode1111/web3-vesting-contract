@@ -5,8 +5,8 @@ export function calculatePercentFromContract(percent: bigint): bigint {
   return BigInt(percent) / PERCENT_DIVIDER;
 }
 
-export function calculatePercentForContract(percent: number, divider = 1_000_000): bigint {
-  return (BigInt(percent * divider) * PERCENT_DIVIDER) / BigInt(divider);
+export function calculatePercentForContract(percent: number, divider = 1e18): bigint {
+  return (BigInt(Math.round(percent * divider)) * PERCENT_DIVIDER) / BigInt(divider);
 }
 
 export function calculateAllocation(allocation: bigint, contractPercent: bigint): bigint {

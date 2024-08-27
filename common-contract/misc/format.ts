@@ -18,8 +18,9 @@ export function printToken(
   value: BigNumberish,
   decimals: Numeric = DEFAULT_DECIMALS,
   tokenName?: string,
+  fractionDigits = 3,
 ): string {
-  return `${value} (${formatToken(value, decimals, tokenName)})`;
+  return `${value} (${formatToken(value, decimals, tokenName, fractionDigits)})`;
 }
 
 export function printDuration(value: number): string {

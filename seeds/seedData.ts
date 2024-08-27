@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import { DAYS, MINUTES, toUnixTime, toUnixTimeUtc, toWei } from '~common';
-import { MATAN_WALLET_COMMON, TokenAddressDescription } from '~common-contract';
+import { TokenAddressDescription } from '~common-contract';
 import { Token, ZERO } from '~constants';
 import { DeployNetworkKey } from '~types';
 import { addSecondsToUnixTime } from '~utils/common';
@@ -10,7 +10,7 @@ import { ContractConfig, DeployContractArgs, DeployTokenArgs, TokenConfig } from
 
 type DeployType = 'test' | 'main' | 'stage' | 'prod';
 
-const deployType: DeployType = (process.env.ENV as DeployType) ?? 'main';
+const deployType: DeployType = (process.env.ENV as DeployType) ?? 'prod';
 
 console.log('ENV', deployType);
 
@@ -32,6 +32,9 @@ export const now = dayjs();
 const startDate = now.add(3, 'minutes');
 const refundStartDate = startDate.add(1, 'minutes');
 const refundCloseDate = startDate.add(10, 'minutes');
+
+const unlockPeriod = 10 * 30 * DAYS;
+const claimFrequency = 1 * MINUTES;
 
 export const contractConfigDeployMap: Record<DeployType, Partial<ContractConfig>> = {
   test: {
@@ -69,15 +72,18 @@ export const contractConfigDeployMap: Record<DeployType, Partial<ContractConfig>
     unlockPeriodPercent: calculatePercentForContract(25),
   },
   prod: {
-    newOwner: MATAN_WALLET_COMMON,
-    // newOwner: '0x627Ab3fbC3979158f451347aeA288B0A3A47E1EF', //s-owner2
-    erc20Token: '0x2B72867c32CF673F7b02d208B26889fEd353B1f8', //SQR
+    // newOwner: MATAN_WALLET_COMMON,
+    newOwner: '0x627Ab3fbC3979158f451347aeA288B0A3A47E1EF', //s-owner2
+    erc20Token: '0xea3eed8616877f5d3c4aebf5a799f2e8d6de9a5e', //SQR
     // startDate: toUnixTime(now.add(5, 'minutes').toDate()),
-    startDate: toUnixTimeUtc(new Date(2024, 7, 26, 14, 0, 0)),
+    startDate: toUnixTimeUtc(new Date(2024, 7, 29, 16, 0, 0)),
     cliffPeriod: 0,
-    firstUnlockPercent: calculatePercentForContract(25),
-    unlockPeriod: 30 * DAYS,
-    unlockPeriodPercent: calculatePercentForContract(25),
+    firstUnlockPercent: calculatePercentForContract(0),
+    unlockPeriod: claimFrequency,
+    unlockPeriodPercent: calculatePercentForContract(100 / (unlockPeriod / claimFrequency)),
+    availableRefund: true,
+    refundStartDate: toUnixTimeUtc(new Date(2024, 7, 29, 16, 0, 0)),
+    refundCloseDate: toUnixTimeUtc(new Date(2024, 8, 27, 16, 0, 0)),
   },
 };
 

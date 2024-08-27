@@ -54,6 +54,11 @@ export function secondsToDhms(seconds: number): string {
 
   const result: string[] = [];
 
+  if (seconds === 0) {
+    result.push(`0s`);
+    return result.join(' ');
+  }
+
   if (d > 0) {
     result.push(`${d}d`);
   }

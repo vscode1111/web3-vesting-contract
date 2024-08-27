@@ -46,8 +46,8 @@ function getChainConfig(
   };
 }
 
-export const defaultNetwork: keyof DeployNetworks = 'bsc';
-// export const defaultNetwork: keyof DeployNetworks = 'mainnet';
+// export const defaultNetwork: keyof DeployNetworks = 'bsc';
+export const defaultNetwork: keyof DeployNetworks = 'mainnet';
 
 const config: HardhatUserConfig = {
   defaultNetwork: isCoverage ? 'hardhat' : defaultNetwork,

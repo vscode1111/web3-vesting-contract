@@ -17,6 +17,7 @@ export function formatToken(
   value: BigNumberish,
   decimals: Numeric = DEFAULT_DECIMALS,
   tokenName?: string,
+  fractionDigits = 3,
 ): string {
-  return `${toNumberDecimalsFixed(value, decimals)}${tokenName ? ` ${tokenName}` : ``}`;
+  return `${toNumberDecimalsFixed(value, decimals, fractionDigits)}${tokenName ? ` ${tokenName}` : ``}`;
 }
