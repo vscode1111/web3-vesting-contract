@@ -12,7 +12,7 @@ import {
   SOURCE_NUMBER_DELIMITER,
   TARGET_NUMBER_DELIMITER,
 } from '../constants';
-import { DepositAllocationFileRecord } from '../types';
+import { AllocationFileRecord } from '../types';
 import { getExchangeDir } from '../utils';
 
 const ALLOCATION_COUNT = 100;
@@ -25,7 +25,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
 
     checkFilePathSync(exchangeDir);
 
-    const allocationFileRecords: DepositAllocationFileRecord[] = [];
+    const allocationFileRecords: AllocationFileRecord[] = [];
 
     for (let i = 0; i < ALLOCATION_COUNT; i++) {
       allocationFileRecords.push({

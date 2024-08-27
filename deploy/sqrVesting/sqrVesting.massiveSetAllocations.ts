@@ -2,6 +2,7 @@ import { readFileSync } from 'fs';
 import { DeployFunction } from 'hardhat-deploy/types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { chunk } from 'lodash';
+import { basename } from 'path';
 import { bigIntSum, convertContentToArray2D, toNumberDecimalsFixed, toWeiWithFixed } from '~common';
 import { callWithTimerHre, retry } from '~common-contract';
 import { SQR_VESTING_NAME, TX_OVERRIDES } from '~constants';
@@ -14,10 +15,14 @@ import {
   SOURCE_NUMBER_DELIMITER,
   TARGET_NUMBER_DELIMITER,
 } from '../constants';
-import { DepositAllocationRecord } from '../types';
+import { AllocationRecord } from '../types';
 import { getExchangeDir, getFundsFileName } from '../utils';
 
+const ADDRESS_COLUMN_INDEX = 0;
+const AMOUNT_COLUMN_INDEX = 7;
+
 const CHUNK_SIZE = 100;
+const RETRY_ATTEMPTS = 5;
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<void> => {
   await callWithTimerHre(async () => {
@@ -33,23 +38,23 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
 
     const exchangeDir = getExchangeDir();
     const sourcePath = getFundsFileName(exchangeDir, DEPOSIT_CONTRACT_ADDRESS);
-    console.log(`Source file: ${sourcePath}`);
+    console.log(`Source file: ${basename(sourcePath)}`);
     const content = readFileSync(sourcePath, { encoding: 'utf8', flag: 'r' });
 
     const rawRecords = convertContentToArray2D(content, LINE_SEPARATOR, CELL_SEPARATOR);
     rawRecords.shift();
 
-    const allocationRecords: DepositAllocationRecord[] = [];
+    const allocationRecords: AllocationRecord[] = [];
 
     rawRecords.forEach((row) => {
       if (row.length < 2) {
         return;
       }
 
-      const rawAddress = row[0];
-      const rawAmount = row[7];
+      const rawAddress = row[ADDRESS_COLUMN_INDEX];
+      const rawAmount = row[AMOUNT_COLUMN_INDEX];
 
-      const allocationRecord: DepositAllocationRecord = {
+      const allocationRecord: AllocationRecord = {
         address: rawAddress,
         amount: toWeiWithFixed(
           Number(
@@ -87,7 +92,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
           }),
         );
 
-        const txAllocationRecords: DepositAllocationRecord[] = [];
+        const txAllocationRecords: AllocationRecord[] = [];
 
         for (const allocation of allocationChunk) {
           if (claimInfoRecords[allocation.address] === allocation.amount) {
@@ -105,7 +110,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
           const amounts = txAllocationRecords.map((allocation) => allocation.amount);
           await retry({
             fn: () => owner2SQRVesting.setAllocations(recipients, amounts, TX_OVERRIDES),
-            maxAttempts: 5,
+            maxAttempts: RETRY_ATTEMPTS,
             printError: true,
           });
           totalNewAllocationCount += txAllocationRecordsLength;

@@ -3,12 +3,12 @@ export interface ContractData {
   symbol: string;
 }
 
-export interface DepositAllocationRecord {
+export interface AllocationRecord {
   address: string;
   amount: bigint;
 }
 
-export interface DepositAllocationFileRecord {
+export interface AllocationFileRecord {
   address: string;
   amount: number;
 }
