@@ -23,8 +23,8 @@ export function printToken(
   return `${value} (${formatToken(value, decimals, tokenName, fractionDigits)})`;
 }
 
-export function printDuration(value: number): string {
-  return `${value} (${secondsToDhms(value)})`;
+export function printDuration(value: Numeric): string {
+  return `${value} (${secondsToDhms(Number(value))})`;
 }
 
 export function printDate(value: BigNumberish): string {

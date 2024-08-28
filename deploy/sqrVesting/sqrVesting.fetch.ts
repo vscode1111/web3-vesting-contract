@@ -1,6 +1,12 @@
 import { DeployFunction } from 'hardhat-deploy/types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { callWithTimerHre, printDate, printToken } from '~common-contract';
+import {
+  FRACTION_DIGITS,
+  callWithTimerHre,
+  printDate,
+  printDuration,
+  printToken,
+} from '~common-contract';
 import { DEFAULT_DECIMALS } from '~common/constants';
 import { SQR_VESTING_NAME } from '~constants';
 import {
@@ -31,17 +37,19 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
       owner: await owner2SQRVesting.owner(),
       erc20Token: await owner2SQRVesting.erc20Token(),
       startDate: printDate(await owner2SQRVesting.startDate()),
-      cliffPeriod: await owner2SQRVesting.cliffPeriod(),
+      cliffPeriod: printDuration(await owner2SQRVesting.cliffPeriod()),
       firstUnlockPercent: printToken(
         await owner2SQRVesting.firstUnlockPercent(),
         DEFAULT_DECIMALS,
         '%',
+        FRACTION_DIGITS,
       ),
-      unlockPeriod: await owner2SQRVesting.unlockPeriod(),
+      unlockPeriod: printDuration(await owner2SQRVesting.unlockPeriod()),
       unlockPeriodPercent: printToken(
         await owner2SQRVesting.unlockPeriodPercent(),
         DEFAULT_DECIMALS,
         '%',
+        FRACTION_DIGITS,
       ),
       availableRefund: await owner2SQRVesting.availableRefund(),
       refundStartDate: printDate(await owner2SQRVesting.refundStartDate()),

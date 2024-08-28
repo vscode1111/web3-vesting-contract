@@ -16,7 +16,10 @@ export const CONTRACTS: Record<CONTRACT_LIST, DeployNetworks> = {
   },
   SQR_VESTING: {
     // mainnet: '0x3f1Ba41D0b48CdAfAABC5D87075aCbC6dCFe62A4', //Test
-    mainnet: '0xb56929cd81D1bb2c33693e8078C88c90e32774a2', //Test
+
+    // Prod
+    mainnet: '0xd1CA8f6aBb2FAE5a35d62C2E9584e49e13fa001C', //Reformdao - 27.08.2024
+
     // bsc: '0xc9b15Fe39ED32F8338b59C8A6ed885ACF5dC6b1f', //Test
     // bsc: '0xee539859d7Eea7034835cd12af9EAc6347F37b56', //Test
     // bsc: '0xB084a0De743043985603A7EE5565Bbd99446113d', //Test
@@ -48,7 +51,7 @@ export const CONTRACTS: Record<CONTRACT_LIST, DeployNetworks> = {
     // bsc: '0xF9AA888D7212FAf5ff43d9b34194727f84676C86', //Test - 1m - 1K allocations
     // bsc: '0x2452F049A4598d03140392771766E68b23AF3d41', //Test - 1m - 1K allocations
 
-    //Main
+    // Main
     // bsc: '0x8f9D1C8D27de370D3770c855D3f2E0986E3e7373', //Main - availableRefund
     // bsc: '0xDe0fD496728a1Bf13D9F6347c03eA34d00FC334c', //Main - availableRefund
     // bsc: '0xbF7FF12786b9CE22Fc8Ee053843aF520a9CAF833', //Main - availableRefund
@@ -58,7 +61,7 @@ export const CONTRACTS: Record<CONTRACT_LIST, DeployNetworks> = {
     // bsc: '0xd5c2409337e996b65f0703889ff91897bfe35531', //Main - v1 - Denis
     // bsc: '0xf28a353d1f72429d7559e207a044d03aec61a63c', //Main - Fedor
     // bsc: '0x6aC6c0f3cC3f522A4Df2e74bbd59A0a7a40e4cDA', //Main - v2.6
-    bsc: '0xB6F78205999182A22F9780F9aC1Ed3b6da17fb2e', //Main - v2.6
+    // bsc: '0xB6F78205999182A22F9780F9aC1Ed3b6da17fb2e', //Main - v2.6
 
     // Prod
     // bsc: '0x9348A50dB866EF8e47037aE20bB03a8Fbf2c875D', //Prod - 1.5
@@ -67,5 +70,7 @@ export const CONTRACTS: Record<CONTRACT_LIST, DeployNetworks> = {
     // bsc: '0x0A90A7be0b94720510715573a366A6e58a6b4A8E', //Prod - 90K - 0xd4F4c2eE273c0F3611f7f93EA8e8eED4fef6906F
     // bsc: '0x4568D54852e18f54a31dF0a3B4FF9a95A81Bc39c', //Prod - 25K - 0xf98844b0103a68E58B5ce99415879A1e30AFCAAC
     // bsc: '0x3F629B77BD8B4DC23B46B71AFdBeE80282da2318', //Prod - 25K - 0x99518a992cC4d9c51f0ae4B269D45F4e9e33b0b2
+    // bsc: '0x983cB81976969E042C896aC16E6E76490E8e9502', //Prod - bsc
+    bsc: '0xA55AEFb9985905716CcD837656e399e15F18ee88', //Prod
   },
 };

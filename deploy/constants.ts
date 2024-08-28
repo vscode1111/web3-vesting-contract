@@ -1,5 +1,7 @@
 import { DepositRefundRecord } from './types';
 
+export const FRACTION_DIGITS = 6;
+
 export const LINE_SEPARATOR = '\n';
 export const CELL_SEPARATOR = ';';
 export const SOURCE_NUMBER_DELIMITER = '.';

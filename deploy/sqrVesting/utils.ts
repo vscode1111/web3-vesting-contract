@@ -1,5 +1,5 @@
 import { DEFAULT_DECIMALS } from '~common';
-import { printDate, printDuration, printToken } from '~common-contract';
+import { FRACTION_DIGITS, printDate, printDuration, printToken } from '~common-contract';
 import { ContractConfig, contractConfig, getContractArgs } from '~seeds';
 import { verifyArgsRequired } from './deployData';
 
@@ -23,9 +23,9 @@ export function formatContractConfig(contractConfig: ContractConfig) {
 
     startDate: printDate(startDate),
     cliffPeriod: printDuration(cliffPeriod),
-    firstUnlockPercent: printToken(firstUnlockPercent, DEFAULT_DECIMALS, '%', 6),
+    firstUnlockPercent: printToken(firstUnlockPercent, DEFAULT_DECIMALS, '%', FRACTION_DIGITS),
     unlockPeriod: printDuration(unlockPeriod),
-    unlockPeriodPercent: printToken(unlockPeriodPercent, DEFAULT_DECIMALS, '%', 6),
+    unlockPeriodPercent: printToken(unlockPeriodPercent, DEFAULT_DECIMALS, '%', FRACTION_DIGITS),
     refundStartDate: printDate(refundStartDate),
     refundCloseDate: printDate(refundCloseDate),
   };
