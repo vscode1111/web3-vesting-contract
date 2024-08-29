@@ -19,10 +19,13 @@ import { AllocationRecord } from '../types';
 import { getExchangeDir, getFundsFileName } from '../utils';
 
 const ADDRESS_COLUMN_INDEX = 0;
-const AMOUNT_COLUMN_INDEX = 7;
+const AMOUNT_COLUMN_INDEX = 1;
 
 const CHUNK_SIZE = 100;
 const RETRY_ATTEMPTS = 5;
+
+const ALLOCATION_TOTAL_LIMIT = -1;
+const SIMULATE = false;
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<void> => {
   await callWithTimerHre(async () => {
@@ -41,8 +44,12 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     console.log(`Source file: ${basename(sourcePath)}`);
     const content = readFileSync(sourcePath, { encoding: 'utf8', flag: 'r' });
 
-    const rawRecords = convertContentToArray2D(content, LINE_SEPARATOR, CELL_SEPARATOR);
+    let rawRecords = convertContentToArray2D(content, LINE_SEPARATOR, CELL_SEPARATOR);
     rawRecords.shift();
+
+    if (ALLOCATION_TOTAL_LIMIT > 1) {
+      rawRecords = rawRecords.splice(0, ALLOCATION_TOTAL_LIMIT);
+    }
 
     const allocationRecords: AllocationRecord[] = [];
 
@@ -109,7 +116,13 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
           const recipients = txAllocationRecords.map((allocation) => allocation.address);
           const amounts = txAllocationRecords.map((allocation) => allocation.amount);
           await retry({
-            fn: () => owner2SQRVesting.setAllocations(recipients, amounts, TX_OVERRIDES),
+            fn: async () => {
+              if (SIMULATE) {
+                console.log(recipients, amounts);
+              } else {
+                await owner2SQRVesting.setAllocations(recipients, amounts, TX_OVERRIDES);
+              }
+            },
             maxAttempts: RETRY_ATTEMPTS,
             printError: true,
           });

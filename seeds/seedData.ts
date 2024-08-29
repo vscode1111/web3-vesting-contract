@@ -10,7 +10,7 @@ import { ContractConfig, DeployContractArgs, DeployTokenArgs, TokenConfig } from
 
 type DeployType = 'test' | 'main' | 'stage' | 'prod';
 
-const deployType: DeployType = (process.env.ENV as DeployType) ?? 'prod';
+const deployType: DeployType = (process.env.ENV as DeployType) ?? 'main';
 
 console.log('ENV', deployType);
 

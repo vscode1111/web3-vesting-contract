@@ -62,6 +62,7 @@ export const CONTRACTS: Record<CONTRACT_LIST, DeployNetworks> = {
     // bsc: '0xf28a353d1f72429d7559e207a044d03aec61a63c', //Main - Fedor
     // bsc: '0x6aC6c0f3cC3f522A4Df2e74bbd59A0a7a40e4cDA', //Main - v2.6
     // bsc: '0xB6F78205999182A22F9780F9aC1Ed3b6da17fb2e', //Main - v2.6
+    bsc: '0xFa05DdfE305a7425beB08F2A14E6B52C0Ab7D9B4', //Main - v2.6
 
     // Prod
     // bsc: '0x9348A50dB866EF8e47037aE20bB03a8Fbf2c875D', //Prod - 1.5
@@ -71,6 +72,6 @@ export const CONTRACTS: Record<CONTRACT_LIST, DeployNetworks> = {
     // bsc: '0x4568D54852e18f54a31dF0a3B4FF9a95A81Bc39c', //Prod - 25K - 0xf98844b0103a68E58B5ce99415879A1e30AFCAAC
     // bsc: '0x3F629B77BD8B4DC23B46B71AFdBeE80282da2318', //Prod - 25K - 0x99518a992cC4d9c51f0ae4B269D45F4e9e33b0b2
     // bsc: '0x983cB81976969E042C896aC16E6E76490E8e9502', //Prod - bsc
-    bsc: '0xA55AEFb9985905716CcD837656e399e15F18ee88', //Prod
+    // bsc: '0xA55AEFb9985905716CcD837656e399e15F18ee88', //Prod
   },
 };
