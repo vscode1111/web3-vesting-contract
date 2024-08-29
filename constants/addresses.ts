@@ -17,6 +17,9 @@ export const CONTRACTS: Record<CONTRACT_LIST, DeployNetworks> = {
   SQR_VESTING: {
     // mainnet: '0x3f1Ba41D0b48CdAfAABC5D87075aCbC6dCFe62A4', //Test
 
+    // Main
+    // mainnet: '0xc73F020ef7BF6EA2292a3B8545E21ef90340A4DD',
+
     // Prod
     mainnet: '0xd1CA8f6aBb2FAE5a35d62C2E9584e49e13fa001C', //Reformdao - 27.08.2024
 

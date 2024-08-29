@@ -2,7 +2,7 @@ import { ContractFactory, TransactionReceipt, TransactionResponse } from 'ethers
 import { ethers } from 'hardhat';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import _ from 'lodash';
-import { DiffArray, Promisable, sleep, toNumber } from '~common';
+import { DiffArray, MS_IN_SEC, Promisable, sleep, toNumber } from '~common';
 import { DeployNetworks } from '~types';
 
 export const FRACTION_DIGITS = 5;
@@ -209,4 +209,10 @@ export async function waitTxEx(
     throw e;
   }
   return tx;
+}
+
+export async function waitBeforeTx(pauseTime = 10) {
+  console.log(`Pause ${pauseTime} sec to make sure...`);
+  await sleep(pauseTime * MS_IN_SEC);
+  console.log(`Starting...`);
 }
