@@ -1,8 +1,8 @@
 import { Signer } from 'ethers';
 import { ERC20Token } from '~typechain-types/contracts/ERC20Token';
 import { IDepositRefund } from '~typechain-types/contracts/IDepositRefund';
-import { SQRVesting } from '~typechain-types/contracts/SQRVesting';
-import { SQRVesting__factory } from '~typechain-types/factories/contracts/SQRVesting__factory';
+import { WEB3Vesting } from '~typechain-types/contracts/WEB3Vesting';
+import { WEB3Vesting__factory } from '~typechain-types/factories/contracts/WEB3Vesting__factory';
 
 export interface Users {
   owner: Signer;
@@ -26,14 +26,14 @@ export interface ERC20TokenContext {
   owner2ERC20Token: ERC20Token;
 }
 
-export interface SQRVestingContext {
-  sqrVestingFactory: SQRVesting__factory;
-  sqrVestingAddress: string;
-  ownerSQRVesting: SQRVesting;
-  user1SQRVesting: SQRVesting;
-  user2SQRVesting: SQRVesting;
-  user3SQRVesting: SQRVesting;
-  owner2SQRVesting: SQRVesting;
+export interface WEB3VestingContext {
+  web3VestingFactory: WEB3Vesting__factory;
+  web3VestingAddress: string;
+  ownerWEB3Vesting: WEB3Vesting;
+  user1WEB3Vesting: WEB3Vesting;
+  user2WEB3Vesting: WEB3Vesting;
+  user3WEB3Vesting: WEB3Vesting;
+  owner2WEB3Vesting: WEB3Vesting;
 }
 
 export interface DepositRefundContext {
@@ -45,4 +45,4 @@ export interface DepositRefundContext {
   owner2DepositRefund: IDepositRefund;
 }
 
-export type ContextBase = Users & ERC20TokenContext & SQRVestingContext;
+export type ContextBase = Users & ERC20TokenContext & WEB3VestingContext;

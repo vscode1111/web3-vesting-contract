@@ -15,8 +15,8 @@ const deployType: DeployType = (process.env.ENV as DeployType) ?? 'main';
 console.log('ENV', deployType);
 
 export const chainTokenDescription: Record<DeployNetworkKey, TokenAddressDescription> = {
-  mainnet: getTokenDescription(Token.tSQR),
-  bsc: getTokenDescription(Token.tSQR),
+  mainnet: getTokenDescription(Token.tWEB3),
+  bsc: getTokenDescription(Token.tWEB3),
 };
 
 export const { address: tokenAddress, decimals: tokenDecimals } =
@@ -53,7 +53,7 @@ export const contractConfigDeployMap: Record<DeployType, Partial<ContractConfig>
     startDate: toUnixTime(startDate.toDate()),
     // startDate: 1724081639,
     erc20Token: '0xa7D4078926d6fB63d843F17811893E29Cdb2fecA', //Temp01 - mainnet
-    // erc20Token: '0x8364a68c32E581332b962D88CdC8dBe8b3e0EE9c', //tSQR2
+    // erc20Token: '0x8364a68c32E581332b962D88CdC8dBe8b3e0EE9c', //tWEB32
     cliffPeriod: 0,
     firstUnlockPercent: calculatePercentForContract(50),
     unlockPeriod: 5 * MINUTES,
@@ -64,7 +64,7 @@ export const contractConfigDeployMap: Record<DeployType, Partial<ContractConfig>
   },
   stage: {
     newOwner: '0x627Ab3fbC3979158f451347aeA288B0A3A47E1EF', //s-owner2
-    erc20Token: '0x2B72867c32CF673F7b02d208B26889fEd353B1f8', //SQR
+    erc20Token: '0x2B72867c32CF673F7b02d208B26889fEd353B1f8', //WEB3
     startDate: toUnixTime(now.add(2, 'minutes').toDate()),
     cliffPeriod: 0,
     firstUnlockPercent: calculatePercentForContract(25),
@@ -74,7 +74,7 @@ export const contractConfigDeployMap: Record<DeployType, Partial<ContractConfig>
   prod: {
     // newOwner: MATAN_WALLET_COMMON,
     newOwner: '0x627Ab3fbC3979158f451347aeA288B0A3A47E1EF', //s-owner2
-    erc20Token: '0xea3eed8616877f5d3c4aebf5a799f2e8d6de9a5e', //SQR
+    erc20Token: '0xea3eed8616877f5d3c4aebf5a799f2e8d6de9a5e', //WEB3
     // startDate: toUnixTime(now.add(5, 'minutes').toDate()),
     startDate: toUnixTimeUtc(new Date(2024, 7, 29, 16, 0, 0)),
     cliffPeriod: 0,

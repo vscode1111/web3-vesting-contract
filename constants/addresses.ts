@@ -1,20 +1,20 @@
 import { DeployNetworks } from '~types';
 
-export const SQR_VESTING_NAME = 'SQRVesting';
+export const WEB3_VESTING_NAME = 'WEB3Vesting';
 export const ERC20_TOKEN_NAME = 'ERC20Token';
 export const DEPOSIT_REFUND_NAME = 'IDepositRefund';
 
 export enum CONTRACT_LIST {
   ERC20_TOKEN = 'ERC20_TOKEN',
-  SQR_VESTING = 'SQR_VESTING',
+  WEB3_VESTING = 'WEB3_VESTING',
 }
 
 export const CONTRACTS: Record<CONTRACT_LIST, DeployNetworks> = {
   ERC20_TOKEN: {
-    mainnet: '0xa7D4078926d6fB63d843F17811893E29Cdb2fecA', //tSQR2
-    bsc: '0x8364a68c32E581332b962D88CdC8dBe8b3e0EE9c', //tSQR2
+    mainnet: '0xa7D4078926d6fB63d843F17811893E29Cdb2fecA', //tWEB32
+    bsc: '0x8364a68c32E581332b962D88CdC8dBe8b3e0EE9c', //tWEB32
   },
-  SQR_VESTING: {
+  WEB3_VESTING: {
     // mainnet: '0x3f1Ba41D0b48CdAfAABC5D87075aCbC6dCFe62A4', //Test
 
     // Main

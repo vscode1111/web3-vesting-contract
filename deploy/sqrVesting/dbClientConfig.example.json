@@ -1,7 +1,0 @@
-{
-  "host": "192.168.0.1",
-  "port": 5432,
-  "user": "postgres",
-  "password": "password",
-  "database": "sqr-launchpad"
-}

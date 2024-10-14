@@ -1,4 +1,4 @@
-slither contracts/SQRVesting.sol --solc-remaps '@openzeppelin=node_modules/@openzeppelin' --exclude naming-convention,external-function,low-level-calls
+slither contracts/WEB3Vesting.sol --solc-remaps '@openzeppelin=node_modules/@openzeppelin' --exclude naming-convention,external-function,low-level-calls
 
 0x5D27C778759e078BBe6D11A6cd802E41459Fe852
 0x5d27c778759e078bbe6d11a6cd802e41459fe852

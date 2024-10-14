@@ -1,9 +1,9 @@
 import { Numeric } from 'ethers';
 import { printDate, printToken } from '~common-contract';
-import { SQRVesting } from '~typechain-types/contracts/SQRVesting';
+import { WEB3Vesting } from '~typechain-types/contracts/WEB3Vesting';
 
 export function printClaimInfo(
-  claimInfo: SQRVesting.ClaimInfoStruct,
+  claimInfo: WEB3Vesting.ClaimInfoStruct,
   decimals: Numeric,
   tokenName?: string,
 ) {
@@ -40,13 +40,13 @@ export function printClaimInfo(
 
 export async function printUserInfo(
   userAddress: string,
-  owner2SQRVesting: SQRVesting,
+  owner2WEB3Vesting: WEB3Vesting,
   decimals: Numeric,
   tokenName: string,
 ) {
   console.log(`User ${userAddress}:`);
   const user1Info = printClaimInfo(
-    await owner2SQRVesting.fetchClaimInfo(userAddress),
+    await owner2WEB3Vesting.fetchClaimInfo(userAddress),
     decimals,
     tokenName,
   );

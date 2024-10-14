@@ -1,4 +1,4 @@
-# Solidity smart contracts for SQR vesting functionality
+# Solidity smart contracts for WEB3 vesting functionality
 
 ## Getting Started
 

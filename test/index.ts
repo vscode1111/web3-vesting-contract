@@ -1,1 +1,1 @@
-export * from './sqrVesting';
+export * from './web3Vesting';

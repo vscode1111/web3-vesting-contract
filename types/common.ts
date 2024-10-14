@@ -5,7 +5,7 @@ export interface DeployNetworks {
 
 export interface Addresses {
   erc20TokenAddress: string;
-  sqrVestingAddress: string;
+  web3VestingAddress: string;
 }
 
 export type StringNumber = string | number;
